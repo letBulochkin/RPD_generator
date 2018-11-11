@@ -39,11 +39,11 @@ class study_plan(object):
         Returns list of available disciplines
         '''
 
-        disciplines = []
+        disciplines = {}
         sheet = self.BOOK['ПланСвод']
 
         for i in crawler.range_search(sheet, 'Y6', 'Y104', self.CATHEDRA):
-            disciplines.append(sheet.cell(row = i[0], column = 2).value)
+            disciplines[sheet.cell(row = i[0], column = 2).value] = sheet.cell(row = i[0], column = 3).value 
         
         return disciplines
 
@@ -54,7 +54,7 @@ class discipline(object):
         
         self.STUDY_PLAN = study_plan
         self.INDEX = index
-        self.NAME = None
+        self.NAME = self.STUDY_PLAN.list_avail_disciplines()[self.INDEX]
         self.PART = None
         self.OBLIGATION = None
         self.COMPETENCIES = self.__get_competencies__()
