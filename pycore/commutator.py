@@ -21,4 +21,6 @@ class session(object):
 		self.RPD.write_to_cell(self.RPD.TABLES[2], 10, 5, self.DISCIPLINE.STUDY_PLAN.EDU_PROG)
 		self.RPD.write_to_cell(self.RPD.TABLES[2], 12, 1, self.DISCIPLINE.STUDY_PLAN.CATHEDRA)
 
+		self.RPD.seq_write_to_table(self.RPD.TABLES[6], self.DISCIPLINE.COMPETENCIES)
+
 		self.RPD.write_file("C:\\Users\\Anton Firsov\\Documents\\Python\\RPD_generator\\data\\", self.DISCIPLINE.INDEX)

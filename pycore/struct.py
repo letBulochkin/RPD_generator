@@ -12,6 +12,7 @@ class study_plan(object):
         Class attributes initialization
 
         TODO: oh we need mapper
+        TODO: all dicts to lists
         '''
 
         self.BOOK = openpyxl.load_workbook(file)
@@ -39,11 +40,12 @@ class study_plan(object):
         Returns list of available disciplines
         '''
 
-        disciplines = {}
+        disciplines = []
         sheet = self.BOOK['ПланСвод']
 
         for i in crawler.range_search(sheet, 'Y6', 'Y104', self.CATHEDRA):
-            disciplines[sheet.cell(row = i[0], column = 2).value] = sheet.cell(row = i[0], column = 3).value 
+            disciplines.append([sheet.cell(row = i[0], column = 2).value, 
+                sheet.cell(row = i[0], column = 3).value]) 
         
         return disciplines
 
@@ -54,10 +56,10 @@ class discipline(object):
         
         self.STUDY_PLAN = study_plan
         self.INDEX = index
-        self.NAME = self.STUDY_PLAN.list_avail_disciplines()[self.INDEX]
+        self.NAME = ''.join(i[1] for i in self.STUDY_PLAN.list_avail_disciplines() if i[0] == index)
         self.PART = None
         self.OBLIGATION = None
-        self.COMPETENCIES = self.__get_competencies__()
+        self.COMPETENCIES = self.__get_competencies__()  
 
     def __get_competencies__(self):
         '''
@@ -66,7 +68,7 @@ class discipline(object):
 
         '''
         
-        competencies = {}
+        competencies = []
         sheet = self.STUDY_PLAN.BOOK['Компетенции(2)']
         
         r = crawler.range_search(sheet, 'C4', 'D85', self.INDEX)[0][0]
@@ -75,7 +77,7 @@ class discipline(object):
             sheet = self.STUDY_PLAN.BOOK['Компетенции']
             cont = sheet.cell(row = crawler.range_search(sheet, 'B3', 'B177', i)[0][0],
                 column = 4).value
-            competencies[i] = cont
+            competencies.append([i, cont])
 
         return competencies
 
