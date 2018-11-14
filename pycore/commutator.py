@@ -21,6 +21,23 @@ class session(object):
 		self.RPD.write_to_cell(self.RPD.TABLES[2], 10, 5, self.DISCIPLINE.STUDY_PLAN.EDU_PROG)
 		self.RPD.write_to_cell(self.RPD.TABLES[2], 12, 1, self.DISCIPLINE.STUDY_PLAN.CATHEDRA)
 
+		self.RPD.write_to_par(4, 0, self.DISCIPLINE.NAME)
+		self.RPD.write_to_par(4, 1, ', '.join([i[0] for i in self.DISCIPLINE.COMPETENCIES]))
+		self.RPD.write_to_par(4, 2, self.STUDY_PLAN.FIELD_OF_KNOW)
+		self.RPD.write_to_par(4, 3, self.STUDY_PLAN.PROFILE)
+
+		self.RPD.write_to_par(6, 0, self.DISCIPLINE.NAME)
+		if not self.DISCIPLINE.OBLIGATION:
+			self.RPD.write_to_par(6, 1, 'по выбору')
+		else:
+			self.RPD.write_to_par(6, 1, '')
+		if self.DISCIPLINE.PART:
+			self.RPD.write_to_par(6, 2, 'базовой части')
+		else:
+			self.RPD.write_to_par(6, 2, 'вариативной части')
+
+		self.RPD.write_to_par(6, 3, self.STUDY_PLAN.FIELD_OF_KNOW)
+
 		self.RPD.seq_write_to_table(self.RPD.TABLES[6], self.DISCIPLINE.COMPETENCIES)
 
 		self.RPD.write_file("C:\\Users\\Anton Firsov\\Documents\\Python\\RPD_generator\\data\\", self.DISCIPLINE.INDEX)

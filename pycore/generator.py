@@ -8,8 +8,10 @@ class rpd(object):
 		self.DOC = Document(file)
 		self.PREFIX = 'РАБОЧАЯ_ПРОГРАММА_'
 		self.TABLES = self.DOC.tables
-		self.PARS = [x for x in self.DOC.paragraphs if x.text != '']  # получить все не пустые параграфы
-
+		self.PARS = [[x] for x in self.DOC.paragraphs if x.text != '']  # получить все не пустые параграфы
+		for i in range(len(self.PARS)):  # добавляем к параграфам каретки с маркерами
+			self.PARS[i].append([k for k in self.PARS[i][0].runs if "<>" in k.text]) 
+	
 	def get_marked_cells(self, table):
 
 		res = []
@@ -54,6 +56,12 @@ class rpd(object):
 
 		table.cell(row, col).paragraphs[0].runs[0].text = text
 
+	def write_to_par(self, par, pos, text):
+		"""
+		TODO: this has a major flaw! 
+		"""
+
+		self.PARS[par][1][pos].text = text
 
 	def write_file(self, path, title):
 		"""

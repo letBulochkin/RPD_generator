@@ -12,7 +12,6 @@ class study_plan(object):
         Class attributes initialization
 
         TODO: oh we need mapper
-        TODO: all dicts to lists
         '''
 
         self.BOOK = openpyxl.load_workbook(file)
@@ -57,15 +56,23 @@ class discipline(object):
         self.STUDY_PLAN = study_plan
         self.INDEX = index
         self.NAME = ''.join(i[1] for i in self.STUDY_PLAN.list_avail_disciplines() if i[0] == index)
-        self.PART = None
-        self.OBLIGATION = None
+        
+        if index.rsplit('.')[1] == 'Б': 
+            self.PART = True  # базовая
+        elif index.rsplit('.')[1] == 'В':
+            self.PART = False  # вариативная 
+
+        if index.rsplit('.')[2] == 'ДВ':
+            self.OBLIGATION = False  # по выбору
+        else:
+            self.OBLIGATION = True
+
         self.COMPETENCIES = self.__get_competencies__()  
 
     def __get_competencies__(self):
         '''
         Возвращает словарь компетенций, изучаемых дисциплиной, и их описаний
         Returns dictionary of competencies and theirs descriptions
-
         '''
         
         competencies = []
