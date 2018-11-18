@@ -1,43 +1,72 @@
+from docx import Document
 from . import struct, generator
 
-class session(object):
+class rpd(object):
 
 	def __init__(self, source, sample):
-		
+
 		self.STUDY_PLAN = struct.study_plan(source)
-		self.RPD = generator.rpd(sample)
+		self.DOC = Document(sample)
+		self.PREFIX = 'РАБОЧАЯ_ПРОГРАММА_'
+
+		self.__get_paragraphs__()
+
+	def __get_paragraphs__(self):
+
+		self.TEXT = [[x] for x in self.DOC.paragraphs if x.text != '']  # получить все не пустые параграфы
+		for i in range(len(self.TEXT)):  # добавляем к параграфам каретки с маркерами
+			self.TEXT[i].append([k for k in self.TEXT[i][0].runs if "<>" in k.text])
 
 	def create_discipline(self, index):
 
 		self.DISCIPLINE = struct.discipline(self.STUDY_PLAN, index)
 
+	def __write_file__(self, path, title):
+
+		self.DOC.save(path + self.PREFIX + title + '.docx')
+
 	def produce(self):
 		
-		self.RPD.write_to_cell(self.RPD.TABLES[2], 0, 0, self.DISCIPLINE.NAME)
-		self.RPD.write_to_cell(self.RPD.TABLES[2], 2, 6, self.DISCIPLINE.STUDY_PLAN.FIELD_OF_KNOW)
-		self.RPD.write_to_cell(self.RPD.TABLES[2], 4, 2, self.DISCIPLINE.STUDY_PLAN.PROFILE)
-		self.RPD.write_to_cell(self.RPD.TABLES[2], 6, 3, self.DISCIPLINE.STUDY_PLAN.INSTITUTE)
-		self.RPD.write_to_cell(self.RPD.TABLES[2], 8, 4, self.DISCIPLINE.STUDY_PLAN.EDU_FORMAT)
-		self.RPD.write_to_cell(self.RPD.TABLES[2], 10, 5, self.DISCIPLINE.STUDY_PLAN.EDU_PROG)
-		self.RPD.write_to_cell(self.RPD.TABLES[2], 12, 1, self.DISCIPLINE.STUDY_PLAN.CATHEDRA)
+		generator.write_to_cell(self.DOC.tables[2], 0, 0, self.DISCIPLINE.NAME)
+		generator.write_to_cell(self.DOC.tables[2], 2, 6, self.DISCIPLINE.STUDY_PLAN.FIELD_OF_KNOW)
+		generator.write_to_cell(self.DOC.tables[2], 4, 2, self.DISCIPLINE.STUDY_PLAN.PROFILE)
+		generator.write_to_cell(self.DOC.tables[2], 6, 3, self.DISCIPLINE.STUDY_PLAN.INSTITUTE)
+		generator.write_to_cell(self.DOC.tables[2], 8, 4, self.DISCIPLINE.STUDY_PLAN.EDU_FORMAT)
+		generator.write_to_cell(self.DOC.tables[2], 10, 5, self.DISCIPLINE.STUDY_PLAN.EDU_PROG)
+		generator.write_to_cell(self.DOC.tables[2], 12, 1, self.DISCIPLINE.STUDY_PLAN.CATHEDRA)
 
-		self.RPD.write_to_par(4, 0, self.DISCIPLINE.NAME)
-		self.RPD.write_to_par(4, 1, ', '.join([i[0] for i in self.DISCIPLINE.COMPETENCIES]))
-		self.RPD.write_to_par(4, 2, self.STUDY_PLAN.FIELD_OF_KNOW)
-		self.RPD.write_to_par(4, 3, self.STUDY_PLAN.PROFILE)
+		generator.write_to_par(self.TEXT[4], 0, self.DISCIPLINE.NAME)
+		generator.write_to_par(self.TEXT[4], 1, ', '.join([i[0] for i in self.DISCIPLINE.COMPETENCIES]))
+		generator.write_to_par(self.TEXT[4], 2, self.STUDY_PLAN.FIELD_OF_KNOW)
+		generator.write_to_par(self.TEXT[4], 3, self.STUDY_PLAN.PROFILE)
 
-		self.RPD.write_to_par(6, 0, self.DISCIPLINE.NAME)
+		generator.write_to_par(self.TEXT[6], 0, self.DISCIPLINE.NAME)
 		if not self.DISCIPLINE.OBLIGATION:
-			self.RPD.write_to_par(6, 1, 'по выбору')
+			generator.write_to_par(self.TEXT[6], 1, 'по выбору')
 		else:
-			self.RPD.write_to_par(6, 1, '')
+			generator.write_to_par(self.TEXT[6], 1, '')
 		if self.DISCIPLINE.PART:
-			self.RPD.write_to_par(6, 2, 'базовой части')
+			generator.write_to_par(self.TEXT[6], 2, 'базовой части')
 		else:
-			self.RPD.write_to_par(6, 2, 'вариативной части')
+			generator.write_to_par(self.TEXT[6], 2, 'вариативной части')
 
-		self.RPD.write_to_par(6, 3, self.STUDY_PLAN.FIELD_OF_KNOW)
+		generator.write_to_par(self.TEXT[6], 3, self.STUDY_PLAN.FIELD_OF_KNOW)
 
-		self.RPD.seq_write_to_table(self.RPD.TABLES[6], self.DISCIPLINE.COMPETENCIES)
+		sum_zach, sum_total = 0, 0
+		for i in self.DISCIPLINE.STUDY_HOURS:
+			sum_zach += i[1]['zach_ed']
+			sum_total += i[1]['total']
+		generator.write_to_par(self.TEXT[7], 0, str(sum_zach))
+		generator.write_to_par(self.TEXT[7], 1, str(sum_total))
 
-		self.RPD.write_file("C:\\Users\\Anton Firsov\\Documents\\Python\\RPD_generator\\data\\", self.DISCIPLINE.INDEX)
+		generator.seq_write_to_table(self.DOC.tables[6], self.DISCIPLINE.COMPETENCIES)
+
+		self.__write_file__("C:\\Users\\Anton Firsov\\Documents\\Python\\RPD_generator\\data\\", self.DISCIPLINE.INDEX)
+
+"""
+		for i in range(len(self.DISCIPLINE.STUDY_HOURS)):
+			t = self.RPD.DOC.TABLES[7]
+			base_par = [i for i in self.RPD.DOC.paragraphs if '4.2' in i.text]
+			parg = base_par.insert_paragraph_before('4.1.' + str(i+1) + 
+				' Семестр ' + str(self.DISCIPLINE.STUDY_HOURS[i][0]))
+"""
