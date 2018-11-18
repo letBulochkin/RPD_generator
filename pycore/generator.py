@@ -1,5 +1,6 @@
 from docx import Document
 from docx.shared import Pt
+from copy import deepcopy
 
 class rpd(object):
 
@@ -23,6 +24,13 @@ class rpd(object):
 					break
 
 		return res
+
+	def copy_table_after(self, table, paragraph):
+		"""https://github.com/python-openxml/python-docx/issues/156"""
+
+		tbl, p = table._tbl, paragraph._p
+		new_tbl = deepcopy(tbl)
+		p.addnext(new_tbl)
 
 	def seq_write_to_table(self, table, data):
 		"""
