@@ -22,6 +22,20 @@ def get_marked_cells(table):
 
 	return res
 
+def insert_table_after(table, paragraph):
+	"""Inserts table after paragraph.
+
+	Credits: https://github.com/python-openxml/python-docx/issues/156
+	ATTENTION: This method modifies list of paragraphs. 
+
+	Args:
+		table (...): docx table to copy
+		paragraph (...): docx paragraph to paste table after
+	"""
+
+	tbl, p = table._tbl, paragraph._p
+	p.addnext(tbl)
+
 def copy_table_after(table, paragraph):
 	"""Copies table after paragraph.
 
@@ -36,6 +50,11 @@ def copy_table_after(table, paragraph):
 	tbl, p = table._tbl, paragraph._p
 	new_tbl = deepcopy(tbl)
 	p.addnext(new_tbl)
+
+def remove_table(table):
+	"""Removes table. Credit: https://stackoverflow.com/questions/47716792/python-docx-delete-table-from-document#comment82455626_47743738"""
+
+	table._element.getparent().remove(table._element)
 
 def seq_write_to_table(table, data):
 	"""Sequential writing to self-created table.

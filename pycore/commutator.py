@@ -61,12 +61,24 @@ class rpd(object):
 
 		generator.seq_write_to_table(self.DOC.tables[6], self.DISCIPLINE.COMPETENCIES)
 
-		self.__write_file__("C:\\Users\\Anton Firsov\\Documents\\Python\\RPD_generator\\data\\", self.DISCIPLINE.INDEX)
-
-"""
 		for i in range(len(self.DISCIPLINE.STUDY_HOURS)):
-			t = self.RPD.DOC.TABLES[7]
-			base_par = [i for i in self.RPD.DOC.paragraphs if '4.2' in i.text]
-			parg = base_par.insert_paragraph_before('4.1.' + str(i+1) + 
+			print('opa!')
+			t = self.DOC.tables[7]
+			base_par = [i for i in self.DOC.paragraphs if '4.2' in i.text]
+			parg = base_par[0].insert_paragraph_before('4.1.' + str(i+1) + 
 				' Семестр ' + str(self.DISCIPLINE.STUDY_HOURS[i][0]))
-"""
+			generator.copy_table_after(t, parg)
+			t = self.DOC.tables[7 + i + 1]
+			queue_list = [['Всего: ', str(self.DISCIPLINE.STUDY_HOURS[i][1]['total']), 
+				str(self.DISCIPLINE.STUDY_HOURS[i][1]['lect']),
+				str(self.DISCIPLINE.STUDY_HOURS[i][1]['lab']),
+				str(self.DISCIPLINE.STUDY_HOURS[i][1]['pract']),
+				str(self.DISCIPLINE.STUDY_HOURS[i][1]['sam'])
+			]]
+			generator.seq_write_to_table(t, queue_list)
+		generator.remove_table(self.DOC.tables[7])
+
+		self.__write_file__("C:\\Users\\Anton Firsov\\Documents\\Python\\RPD_generator\\data\\", self.DISCIPLINE.INDEX)
+			
+			
+			
