@@ -79,6 +79,7 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setPointSize(11)
         self.uploadBox.setFont(font)
+        self.uploadBox.setVisible(True)
         self.uploadBox.setObjectName("uploadBox")
         self.study_planUploadBox = QtWidgets.QGroupBox(self.uploadBox)
         self.study_planUploadBox.setGeometry(QtCore.QRect(20, 30, 511, 111))
@@ -208,7 +209,7 @@ class Ui_MainWindow(object):
         self.compSaveButton.setGeometry(QtCore.QRect(130, 30, 111, 31))
         self.compSaveButton.setObjectName("compSaveButton")
         self.compScrollArea = QtWidgets.QScrollArea(self.competencyBox)
-        # self.compScrollArea.setGeometry(QtCore.QRect(10, 70, 531, 521))
+        #self.compScrollArea.setGeometry(QtCore.QRect(10, 70, 531, 521))
         self.compScrollArea.move(10, 70)
         self.compScrollArea.setFixedWidth(531)
         self.compScrollArea.setMinimumHeight(520)
@@ -216,13 +217,9 @@ class Ui_MainWindow(object):
         self.compScrollArea.setObjectName("compScrollArea")
         self.compScrollAreaWidgetContents = QtWidgets.QWidget()
         #self.compScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 529, 519))
-        #self.compScrollAreaWidgetContents.move(0, 0)
-        #self.compScrollAreaWidgetContents.setFixedWidth(529)
-        #self.compScrollArea.setMinimumHeight(319)
         self.compScrollAreaWidgetContents.setObjectName("compScrollAreaWidgetContents")
         self.compScrollArea.setWidget(self.compScrollAreaWidgetContents)
-        # self.verticalScrollLayout = QtWidgets.QVBoxLayout(self.competencyBox)
-        # self.verticalScrollLayout.addWidget(self.compScrollArea)
+        
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
@@ -266,4 +263,4 @@ class Ui_MainWindow(object):
         self.competencyBox.setTitle(_translate("MainWindow", "Компетенции"))
         self.compAddButton.setText(_translate("MainWindow", "Добавить"))
         self.compSaveButton.setText(_translate("MainWindow", "Сохранить"))
-
+        

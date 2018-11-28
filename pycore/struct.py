@@ -1,4 +1,5 @@
 import openpyxl
+from enum import Enum
 from . import crawler
 
 class study_plan(object):
@@ -71,7 +72,11 @@ class discipline(object):
             self.OBLIGATION = True
 
         self.COMPETENCIES = self.__get_competencies__()
-        self.STUDY_HOURS = self.__get_hours__()  
+        self.STUDY_HOURS = self.__get_hours__()
+        self.SEMESTERS = []
+
+        for i in self.__get_semesters__():
+            self.SEMESTERS.append([i, semester()]) 
 
     def __get_competencies__(self):
         '''
@@ -134,3 +139,47 @@ class discipline(object):
             sem[i] = [sem[i], h]
 
         return sem
+
+class semester(object):
+
+    def __init__(self):
+
+        self.STUDY_TYPES = Enum('Study_Types', 'lect lab pract sam')
+
+        self.MODULES = []
+        
+    def add_module(self, num, description):
+
+        res = {}
+
+        res['num'] = int(num)
+        res['descr'] = description
+        res['lect'] = None
+        res['lab'] = None
+        res['pract'] = None
+        res['sam'] = None
+
+        self.MODULES.append(res)
+
+    def add_study(self, module, type, hours):
+
+        for i in self.MODULES:
+            if i['num'] == module:
+                t = self.STUDY_TYPES(type).name
+                i[t] = hours
+
+    """
+    def add_study(self, module, type, num, hours, description):
+
+        for i in self.MODULES:
+            if i['num'] == module:
+                t = self.STUDY_TYPES(type).name
+                i[t] = [num, description, hours]
+    """
+    """
+    def set_sam_hours(self, module, hours):
+
+        for i in self.MODULES:
+            if i['num'] == module:
+                i['sam'] = hours
+    """

@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import (QWidget, QApplication, QMainWindow, 
 	QFileDialog, QLabel, QLineEdit, QTextEdit, QGroupBox, 
-	QFormLayout, QGridLayout, QVBoxLayout)
+	QFormLayout, QGridLayout, QVBoxLayout, QPushButton, QScrollArea)
 from pycore import commutator
 import sys, ui_RPD
 
@@ -23,6 +23,76 @@ class competencyBox(QWidget):
 
 		self.box.setLayout(self.form_lay)
 		self.box.setFixedSize(460, 240)
+
+class semesterBox(QWidget):
+
+	def __init__(self, parent):
+
+		super(semesterBox, self).__init__(parent)
+
+		font = QtGui.QFont()
+		font.setPointSize(11)
+		
+		self.box = QGroupBox(self)
+		self.box.setTitle("Разделы дисциплины")
+		self.box.setFont(font)
+
+		self.dicpInfoLabel = QLabel(self.box)
+		self.dicpInfoLabel.setText("Дисциплина: ")
+		self.dicpInfoLabel.setGeometry(QtCore.QRect(10, 30, 91, 16))
+		
+		self.dicpNameLabel = QLabel(self.box)
+		self.dicpNameLabel.setGeometry(QtCore.QRect(100, 30, 431, 16))
+		
+		self.semNoInfoLabel = QLabel(self.box)
+		self.semNoInfoLabel.setText("Семестр №")
+		self.semNoInfoLabel.setGeometry(QtCore.QRect(10, 50, 81, 16))
+		
+		self.semNoLabel = QLabel(self.box)
+		self.semNoLabel.setGeometry(QtCore.QRect(100, 50, 21, 16))
+		self.lectInfoLabel = QLabel(self.box)
+		self.lectInfoLabel.setText("Лк:")
+		self.lectInfoLabel.setGeometry(QtCore.QRect(130, 50, 31, 16))
+		self.lectLabel = QLabel(self.box)
+		self.lectLabel.setGeometry(QtCore.QRect(160, 50, 21, 16))
+		self.labInfoLabel = QLabel(self.box)
+		self.labInfoLabel.setText("Лаб:")
+		self.labInfoLabel.setGeometry(QtCore.QRect(190, 50, 31, 16))
+		self.labLabel = QLabel(self.box)
+		self.labLabel.setGeometry(QtCore.QRect(230, 50, 21, 16))
+		self.practInfoLabel = QLabel(self.box)
+		self.practInfoLabel.setText("Пр:")
+		self.practInfoLabel.setGeometry(QtCore.QRect(260, 50, 31, 16))
+		self.practLabel = QLabel(self.box)
+		self.practLabel.setGeometry(QtCore.QRect(290, 50, 21, 16))
+		self.samInfoLabel = QLabel(self.box)
+		self.samInfoLabel.setText("Ср:")
+		self.samInfoLabel.setGeometry(QtCore.QRect(320, 50, 31, 16))
+		self.samLabel = QLabel(self.box)
+		self.samLabel.setGeometry(QtCore.QRect(350, 50, 21, 16))
+		self.controlInfoLabel = QLabel(self.box)
+		self.controlInfoLabel.setText("Контроль")
+		self.controlInfoLabel.setGeometry(QtCore.QRect(380, 50, 71, 16))
+		self.controlLabel = QLabel(self.box)
+		self.controlLabel.setGeometry(QtCore.QRect(460, 50, 41, 16))
+		self.totalInfoLabel = QLabel(self.box)
+		self.totalInfoLabel.setText("Всего часов:")
+		self.totalInfoLabel.setGeometry(QtCore.QRect(10, 70, 91, 16))
+		self.totalLabel = QLabel(self.box)
+		self.totalLabel.setGeometry(QtCore.QRect(110, 70, 51, 16))
+		self.createModuleButton = QPushButton(self.box)
+		self.createModuleButton.setText("Создать раздел")
+		self.createModuleButton.setGeometry(QtCore.QRect(10, 100, 131, 31))
+		self.saveModuleButton = QPushButton(self.box)
+		self.saveModuleButton.setText("Сохранить")
+		self.saveModuleButton.setGeometry(QtCore.QRect(150, 100, 101, 31))
+		self.moduleScrollArea = QScrollArea(self.box)
+		self.moduleScrollArea.move(10, 140)
+		self.moduleScrollArea.setFixedWidth(531)
+		self.moduleScrollArea.setWidgetResizable(True)
+		self.moduleScrollAreaWidgetContents = QWidget()
+		self.moduleScrollAreaWidgetContents.setObjectName("moduleScrollAreaWidgetContents")
+		self.moduleScrollArea.setWidget(self.moduleScrollAreaWidgetContents)
 
 class RPD_Window(QMainWindow):
 
@@ -56,14 +126,18 @@ class RPD_Window(QMainWindow):
 				if self.sender().text() == "Далее" and i != (len(self.BOXES) - 1):
 					print(i, i+1)
 					self.BOXES[i][2] = False
+					self.BOXES[i][1].setFont(QtGui.QFont("MS Shell Dlg 2", 11, QtGui.QFont.Normal))
 					self.BOXES[i][0].setVisible(False)
 					self.BOXES[i+1][2] = True
+					self.BOXES[i+1][1].setFont(QtGui.QFont("MS Shell Dlg 2", 11, QtGui.QFont.Bold))
 					self.BOXES[i+1][0].setVisible(True)
 					break
 				elif self.sender().text() == "Вернуться назад" and i != 0:
 					self.BOXES[i][2] = False
+					self.BOXES[i][1].setFont(QtGui.QFont("MS Shell Dlg 2", 11, QtGui.QFont.Normal))
 					self.BOXES[i][0].setVisible(False)
 					self.BOXES[i-1][2] = True
+					self.BOXES[i-1][1].setFont(QtGui.QFont("MS Shell Dlg 2", 11, QtGui.QFont.Bold))
 					self.BOXES[i-1][0].setVisible(True)
 					break
 	
@@ -130,11 +204,18 @@ class RPD_Window(QMainWindow):
 		for i in range(len(textEdits)):
 			textEdits[i].setText(self.RPD.DISCIPLINE.COMPETENCIES[i][1])
 
-		'''
-		for i in self.ui.compScrollAreaWidgetContents.findChildren(QVBoxLayout):
-			print(i)
-
-		'''
+		for i in self.RPD.DISCIPLINE.STUDY_HOURS:
+			e = semesterBox(self.ui.centralwidget)
+			e.setGeometry(QtCore.QRect(250, 0, 551, 601))
+			e.setVisible(False)
+			self.BOXES.append([e, self.ui.label_4, False])
+			e.semNoLabel.setText(str(i[0]))
+			e.lectLabel.setText(str(i[1]['lect']))
+			e.labLabel.setText(str(i[1]['lab']))
+			e.practLabel.setText(str(i[1]['pract']))
+			e.samLabel.setText(str(i[1]['sam']))
+			e.controlLabel.setText(str(i[1]['krpa'] + i[1]['control']))
+			e.totalLabel.setText(str(i[1]['total']))
 
 	def addBox(self, parent, element, number):
 		"""ATTENTION: does not work if called multiple times"""
