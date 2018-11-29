@@ -258,11 +258,48 @@ class RPD_Window(QMainWindow):
 				e.moduleScrollAreaWidgetContents, moduleBox, 1))
 			e.delModuleButton.clicked.connect(partial(self.deleteBox,
 				e.moduleScrollAreaWidgetContents))
+			e.saveModuleButton.clicked.connect(partial(
+				self.handleSaveModuleButtonClicked, 
+				e.moduleScrollAreaWidgetContents,
+				int(e.semNoLabel.text())))
 			#e.createModuleButton.clicked.connect(lambda: self.addBox(
 				#e.moduleScrollAreaWidgetContents, moduleBox, 1))
 			print("Button!", e.createModuleButton)
 			print("Del Button!", e.delModuleButton)
 			print("SAWC!!!", e.moduleScrollAreaWidgetContents)
+
+	def handleCompSaveButtonClicked(self):
+		pass
+
+	def handleSaveModuleButtonClicked(self, parent, semester):
+
+		lineEdits = parent.findChildren(QLineEdit)  # QSpinBox представляется как QLineEdit тоже
+		textEdits = parent.findChildren(QTextEdit)
+				
+		for i in self.RPD.DISCIPLINE.SEMESTERS:
+			if i[0] == semester:
+				for k in range(len(textEdits)):
+					i[1].add_module(
+						int(lineEdits[k*5].text()),
+						textEdits[k].toPlainText())
+					i[1].add_study(
+						int(lineEdits[k*5].text()),
+						1,
+						int(lineEdits[k*5 + 1].text()))
+					i[1].add_study(
+						int(lineEdits[k*5].text()),
+						2,
+						int(lineEdits[k*5 + 2].text()))
+					i[1].add_study(
+						int(lineEdits[k*5].text()),
+						3,
+						int(lineEdits[k*5 + 3].text()))
+					i[1].add_study(
+						int(lineEdits[k*5].text()),
+						4,
+						int(lineEdits[k*5 + 4].text()))
+
+		self.sender().setDisabled(True)
 
 	def addBox(self, parent, element, number):
 		
