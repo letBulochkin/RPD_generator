@@ -69,12 +69,24 @@ class rpd(object):
 				' Семестр ' + str(self.DISCIPLINE.STUDY_HOURS[i][0]))
 			generator.copy_table_after(t, parg)
 			t = self.DOC.tables[7 + i + 1]
-			queue_list = [['Всего: ', str(self.DISCIPLINE.STUDY_HOURS[i][1]['total']), 
+			queue_list = []
+			for k in self.DISCIPLINE.SEMESTERS:
+				if k[0] == self.DISCIPLINE.STUDY_HOURS[i][0]:
+					for l in k[1].MODULES:
+						queue_list.append([str(l['num']),
+							str(l['lect'] + l['lab'] + l['pract'] + l['sam']),
+							str(l['lect']),
+							str(l['lab']),
+							str(l['pract']),
+							str(l['sam'])
+						])
+			queue_list.append(['Всего: ', 
+				str(self.DISCIPLINE.STUDY_HOURS[i][1]['total']), 
 				str(self.DISCIPLINE.STUDY_HOURS[i][1]['lect']),
 				str(self.DISCIPLINE.STUDY_HOURS[i][1]['lab']),
 				str(self.DISCIPLINE.STUDY_HOURS[i][1]['pract']),
 				str(self.DISCIPLINE.STUDY_HOURS[i][1]['sam'])
-			]]
+			])
 			generator.seq_write_to_table(t, queue_list)
 		generator.remove_table(self.DOC.tables[7])
 
