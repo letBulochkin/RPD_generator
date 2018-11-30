@@ -25,7 +25,7 @@ class rpd(object):
 
 		self.DOC.save(path + self.PREFIX + title + '.docx')
 
-	def produce(self):
+	def produce(self, path):
 		
 		generator.write_to_cell(self.DOC.tables[2], 0, 0, self.DISCIPLINE.NAME)
 		generator.write_to_cell(self.DOC.tables[2], 2, 6, self.DISCIPLINE.STUDY_PLAN.FIELD_OF_KNOW)
@@ -78,7 +78,5 @@ class rpd(object):
 			generator.seq_write_to_table(t, queue_list)
 		generator.remove_table(self.DOC.tables[7])
 
-		self.__write_file__("C:\\Users\\Anton Firsov\\Documents\\Python\\RPD_generator\\data\\", self.DISCIPLINE.INDEX)
-			
-			
-			
+		#self.__write_file__("C:\\Users\\Anton Firsov\\Documents\\Python\\RPD_generator\\data\\", self.DISCIPLINE.INDEX)
+		self.__write_file__(path, self.DISCIPLINE.INDEX)

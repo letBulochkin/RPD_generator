@@ -138,10 +138,12 @@ class RPD_Window(QMainWindow):
 		self.PLAN_FNAME = None
 		self.SAMPLE_FNAME = None
 		self.RPD = None  # может не надо?
+		self.RPD_PATH = None
 
 		self.BOXES = [[self.ui.uploadBox, self.ui.uploadBoxLabel, True], 
 			[self.ui.disciplineBox, self.ui.disciplineBoxLabel, False],
-			[self.ui.competencyBox, self.ui.competencyBoxLabel, False]]
+			[self.ui.competencyBox, self.ui.competencyBoxLabel, False],
+			[self.ui.downloadBox, self.ui.label_15, False]]
 
 		self.ui.backButton.clicked.connect(self.browseBox)  # можно перенести в handleCreateButtonClicked
 		self.ui.forwButton.clicked.connect(self.browseBox)
@@ -149,6 +151,8 @@ class RPD_Window(QMainWindow):
 		self.ui.rpdUploadButton.clicked.connect(self.handleRpdButtonClicked)
 		self.ui.createButton.clicked.connect(self.handleCreateButtonClicked)
 		self.ui.dispShowButton.clicked.connect(self.handleDispShowButtonClicked)
+		self.ui.downloadPathButton.clicked.connect(self.handleDownloadPathButtonClicked)
+		self.ui.downloadButton.clicked.connect(self.handleDownloadButtonClicked)
 
 	def browseBox(self):
 		"""Browses QGroupBox'es in response to button click."""
@@ -241,19 +245,20 @@ class RPD_Window(QMainWindow):
 		self.ui.compDelButton.clicked.connect(partial(self.deleteBox,
 			self.ui.compScrollAreaWidgetContents))
 
-		for i in self.RPD.DISCIPLINE.STUDY_HOURS:
+		for i in range(len(self.RPD.DISCIPLINE.STUDY_HOURS)):
 			e = semesterBox(self.ui.centralwidget)
 			e.setGeometry(QtCore.QRect(250, 0, 551, 601))
 			e.setVisible(False)
-			self.BOXES.append([e, self.ui.label_4, False])
+			self.BOXES.insert(3 + i, [e, self.ui.label_4, False])
 			e.dicpNameLabel.setText(self.RPD.DISCIPLINE.NAME)
-			e.semNoLabel.setText(str(i[0]))
-			e.lectLabel.setText(str(i[1]['lect']))
-			e.labLabel.setText(str(i[1]['lab']))
-			e.practLabel.setText(str(i[1]['pract']))
-			e.samLabel.setText(str(i[1]['sam']))
-			e.controlLabel.setText(str(i[1]['krpa'] + i[1]['control']))
-			e.totalLabel.setText(str(i[1]['total']))
+			e.semNoLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][0]))
+			e.lectLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['lect']))
+			e.labLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['lab']))
+			e.practLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['pract']))
+			e.samLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['sam']))
+			e.controlLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['krpa'] 
+				+ self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['control']))
+			e.totalLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['total']))
 			e.createModuleButton.clicked.connect(partial(self.addBox, 
 				e.moduleScrollAreaWidgetContents, moduleBox, 1))
 			e.delModuleButton.clicked.connect(partial(self.deleteBox,
@@ -300,6 +305,20 @@ class RPD_Window(QMainWindow):
 						int(lineEdits[k*5 + 4].text()))
 
 		self.sender().setDisabled(True)
+
+	def handleDownloadPathButtonClicked(self):
+		
+		dlg = QFileDialog()
+		dlg.setFileMode(QFileDialog.Directory)
+		self.RPD_PATH = dlg.getExistingDirectory(self, 'Сохранить рабочую программу', 'C\\')
+		self.RPD_PATH = r"{}".format(self.RPD_PATH)
+		self.RPD_PATH = self.RPD_PATH.replace('/', '\\')
+		self.RPD_PATH = self.RPD_PATH + '\\'
+		self.ui.downloadPathLabel.setText(self.RPD_PATH)
+
+	def handleDownloadButtonClicked(self):
+		
+		self.RPD.produce(self.RPD_PATH)
 
 	def addBox(self, parent, element, number):
 		
