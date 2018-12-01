@@ -8,6 +8,7 @@ class rpd(object):
 		self.STUDY_PLAN = struct.study_plan(source)
 		self.DOC = Document(sample)
 		self.PREFIX = 'РАБОЧАЯ_ПРОГРАММА_'
+		self.ADDED_TABLES = 0
 
 		self.__get_paragraphs__()
 
@@ -68,6 +69,7 @@ class rpd(object):
 			parg = base_par[0].insert_paragraph_before('4.1.' + str(i+1) + 
 				' Семестр ' + str(self.DISCIPLINE.STUDY_HOURS[i][0]))
 			generator.copy_table_after(t, parg)
+			self.ADDED_TABLES += 1
 			t = self.DOC.tables[7 + i + 1]
 			queue_list = []
 			for k in self.DISCIPLINE.SEMESTERS:
@@ -89,6 +91,23 @@ class rpd(object):
 			])
 			generator.seq_write_to_table(t, queue_list)
 		generator.remove_table(self.DOC.tables[7])
+		self.ADDED_TABLES -= 1
+		
+		sdv = self.ADDED_TABLES
+		for i in range(len(self.DISCIPLINE.SEMESTERS)):
+			t = self.DOC.tables[8 + sdv]
+			base_par = [i for i in self.DOC.paragraphs if '4.3' in i.text]
+			parg = base_par[0].insert_paragraph_before('4.2.' + str(i+1) + 
+				' Семестр ' + str(self.DISCIPLINE.SEMESTERS[i][0]))
+			generator.copy_table_after(t, parg)
+			self.ADDED_TABLES += 1
+			t = self.DOC.tables[8 + sdv + i + 1]
+			queue_list = []
+			for k in self.DISCIPLINE.SEMESTERS[i][1].MODULES:
+				queue_list.append([str(k['num']), str(k['descr'])])
+			generator.seq_write_to_table(t, queue_list)
+		generator.remove_table(self.DOC.tables[8 + sdv])
+		self.ADDED_TABLES -= 1
 
 		#self.__write_file__("C:\\Users\\Anton Firsov\\Documents\\Python\\RPD_generator\\data\\", self.DISCIPLINE.INDEX)
 		self.__write_file__(path, self.DISCIPLINE.INDEX)
