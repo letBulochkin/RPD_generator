@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (QWidget, QApplication, QMainWindow,
 from pycore import commutator
 from functools import partial
 from inspect import isclass
-import sys, sip, ui_RPD
+import os, sys, sip, ui_RPD
 
 class competencyBox(QWidget):
 	"""QT Interface class: QGroupBox containing competencies info"""
@@ -238,6 +238,8 @@ class RPD_Window(QMainWindow):
 		else:
 			self.ui.uploadStatusLabel.setText('Не выбраны файлы!')
 
+		self.sender().setDisabled(True)
+
 	def handleDispShowButtonClicked(self):
 		"""Create discipline instance, fill the QLineEdits with information and add competency descriptions to the next box
 
@@ -368,6 +370,8 @@ class RPD_Window(QMainWindow):
 	def handleDownloadButtonClicked(self):
 		
 		self.RPD.produce(self.RPD_PATH)
+		os.system('explorer "{}"'.format(self.RPD_PATH))
+		sys.exit()
 
 	def connectModuleBox(addfunc):
 		"""Decorator for addBox method. Connects added QSpinBoxes to local method"""
@@ -384,7 +388,7 @@ class RPD_Window(QMainWindow):
 
 	@connectModuleBox
 	def addBox_module(self, parent, element, number):  #какая же это хуйня. 
-		"""Link to addBox method to connect deocrator (and still have access to original method)"""
+		"""Link to addBox method to connect decorator (and still have access to original method)"""
 
 		self.addBox(parent, element, number)
 
@@ -396,9 +400,6 @@ class RPD_Window(QMainWindow):
 			element (class): interface class to add
 			number (int): quantity of elements to add
 		"""
-		
-		#print("==SENDER==", self.sender())
-		#print("==PARENT==", parent)
 
 		if not parent.findChildren(QVBoxLayout):  # А почему я иду по QVBoxLayout, а не по самим вставляемым классам?
 			vert_lay = QVBoxLayout(parent)  # добавление в layout для адекватного отображения элементов (не спрашивай)
