@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (QWidget, QApplication, QMainWindow,
 	QSpinBox)
 from pycore import commutator
 from functools import partial
+from inspect import isclass
 import sys, sip, ui_RPD
 
 class competencyBox(QWidget):
@@ -68,14 +69,12 @@ class semesterBox(QWidget):
 		self.dicpInfoLabel = QLabel(self.box)
 		self.dicpInfoLabel.setText("Дисциплина: ")
 		self.dicpInfoLabel.setGeometry(QtCore.QRect(10, 30, 91, 16))
-		
 		self.dicpNameLabel = QLabel(self.box)
 		self.dicpNameLabel.setGeometry(QtCore.QRect(100, 30, 431, 16))
 		
 		self.semNoInfoLabel = QLabel(self.box)
 		self.semNoInfoLabel.setText("Семестр №")
 		self.semNoInfoLabel.setGeometry(QtCore.QRect(10, 50, 81, 16))
-		
 		self.semNoLabel = QLabel(self.box)
 		self.semNoLabel.setGeometry(QtCore.QRect(100, 50, 21, 16))
 		self.lectInfoLabel = QLabel(self.box)
@@ -103,22 +102,49 @@ class semesterBox(QWidget):
 		self.controlInfoLabel.setGeometry(QtCore.QRect(380, 50, 71, 16))
 		self.controlLabel = QLabel(self.box)
 		self.controlLabel.setGeometry(QtCore.QRect(460, 50, 41, 16))
+		
 		self.totalInfoLabel = QLabel(self.box)
 		self.totalInfoLabel.setText("Всего часов:")
 		self.totalInfoLabel.setGeometry(QtCore.QRect(10, 70, 91, 16))
 		self.totalLabel = QLabel(self.box)
 		self.totalLabel.setGeometry(QtCore.QRect(110, 70, 51, 16))
+		
+		self.relevantInfoLabel = QLabel(self.box)
+		self.relevantInfoLabel.setText("Часов введено:")
+		self.relevantInfoLabel.setGeometry(QtCore.QRect(10, 90, 111, 16))
+		self.lectRelInfoLabel = QLabel(self.box)
+		self.lectRelInfoLabel.setText("Лк:")
+		self.lectRelInfoLabel.setGeometry(QtCore.QRect(130, 90, 31, 16))
+		self.lectRelLabel = QLabel(self.box)
+		self.lectRelLabel.setGeometry(QtCore.QRect(160, 90, 21, 16))
+		self.labRelInfoLabel = QLabel(self.box)
+		self.labRelInfoLabel.setText("Лаб:")
+		self.labRelInfoLabel.setGeometry(QtCore.QRect(190, 90, 31, 16))
+		self.labRelLabel = QLabel(self.box)
+		self.labRelLabel.setGeometry(QtCore.QRect(230, 90, 21, 16))
+		self.practRelInfoLabel = QLabel(self.box)
+		self.practRelInfoLabel.setText("Пр:")
+		self.practRelInfoLabel.setGeometry(QtCore.QRect(260, 90, 31, 16))
+		self.practRelLabel = QLabel(self.box)
+		self.practRelLabel.setGeometry(QtCore.QRect(290, 90, 21, 16))
+		self.samRelInfoLabel = QLabel(self.box)
+		self.samRelInfoLabel.setText("Ср:")
+		self.samRelInfoLabel.setGeometry(QtCore.QRect(320, 90, 31, 16))
+		self.samRelLabel = QLabel(self.box)
+		self.samRelLabel.setGeometry(QtCore.QRect(350, 90, 21, 16))
+
 		self.createModuleButton = QPushButton(self.box)
 		self.createModuleButton.setText("+")
-		self.createModuleButton.setGeometry(QtCore.QRect(10, 100, 31, 31))
+		self.createModuleButton.setGeometry(QtCore.QRect(10, 120, 31, 31))
 		self.delModuleButton = QPushButton(self.box)
 		self.delModuleButton.setText("-")
-		self.delModuleButton.setGeometry(QtCore.QRect(43, 100, 31, 31))
+		self.delModuleButton.setGeometry(QtCore.QRect(43, 120, 31, 31))
 		self.saveModuleButton = QPushButton(self.box)
 		self.saveModuleButton.setText("Сохранить")
-		self.saveModuleButton.setGeometry(QtCore.QRect(76, 100, 101, 31))
+		self.saveModuleButton.setGeometry(QtCore.QRect(76, 120, 101, 31))
+		
 		self.moduleScrollArea = QScrollArea(self.box)
-		self.moduleScrollArea.move(10, 140)
+		self.moduleScrollArea.move(10, 160)
 		self.moduleScrollArea.setFixedWidth(531)
 		self.moduleScrollArea.setMinimumHeight(450)
 		self.moduleScrollArea.setWidgetResizable(True)
@@ -259,7 +285,7 @@ class RPD_Window(QMainWindow):
 			e.controlLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['krpa'] 
 				+ self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['control']))
 			e.totalLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['total']))
-			e.createModuleButton.clicked.connect(partial(self.addBox, 
+			e.createModuleButton.clicked.connect(partial(self.addBox_module, 
 				e.moduleScrollAreaWidgetContents, moduleBox, 1))
 			e.delModuleButton.clicked.connect(partial(self.deleteBox,
 				e.moduleScrollAreaWidgetContents))
@@ -267,16 +293,38 @@ class RPD_Window(QMainWindow):
 				self.handleSaveModuleButtonClicked, 
 				e.moduleScrollAreaWidgetContents,
 				int(e.semNoLabel.text())))
-			#e.createModuleButton.clicked.connect(lambda: self.addBox(
-				#e.moduleScrollAreaWidgetContents, moduleBox, 1))
+			'''
+			print('V')
+			[print(i) for i in e.moduleScrollAreaWidgetContents.findChildren(moduleBox)]
+			print('V')
 			print("Button!", e.createModuleButton)
 			print("Del Button!", e.delModuleButton)
 			print("SAWC!!!", e.moduleScrollAreaWidgetContents)
+			'''
 
 	def handleCompSaveButtonClicked(self):
 		pass
 
-	def handleSaveModuleButtonClicked(self, parent, semester):
+	def handleSpinBoxValueChanged(self, parent):
+
+		lineEdits = parent.moduleScrollArea.findChildren(QLineEdit)
+
+		print(lineEdits)
+
+		lect, lab, pract, sam = 0, 0, 0, 0
+		
+		for i in range(0, len(lineEdits), 5):
+			lect += int(lineEdits[i + 1].text())
+			lab += int(lineEdits[i + 2].text())
+			pract += int(lineEdits[i + 3].text())
+			sam += int(lineEdits[i + 4].text())
+
+		parent.lectRelLabel.setText(str(lect))
+		parent.labRelLabel.setText(str(lab))
+		parent.practRelLabel.setText(str(pract))
+		parent.samRelLabel.setText(str(sam))
+
+	def handleSaveModuleButtonClicked(self, parent, semester):  # почему я не реализовал это как метод класса moduleBox?
 
 		lineEdits = parent.findChildren(QLineEdit)  # QSpinBox представляется как QLineEdit тоже
 		textEdits = parent.findChildren(QTextEdit)
@@ -320,12 +368,32 @@ class RPD_Window(QMainWindow):
 		
 		self.RPD.produce(self.RPD_PATH)
 
+	def connectModuleBox(addfunc):
+
+		def wrapper(self, parent, element, number):
+			addfunc(self, parent, element, number)
+			[print(parent, i) for i in parent.findChildren(QSpinBox)]
+			e = parent
+			while not isinstance(e, semesterBox):
+				print(e)
+				e = e.parent()
+			[print(i.text()) for i in e.findChildren(QLabel)]
+			for i in parent.findChildren(QSpinBox):
+				i.valueChanged.connect(partial(self.handleSpinBoxValueChanged, e))
+		
+		return wrapper
+
+	@connectModuleBox
+	def addBox_module(self, parent, element, number):  #какая же это хуйня. 
+
+		self.addBox(parent, element, number)
+
 	def addBox(self, parent, element, number):
 		
 		print("==SENDER==", self.sender())
 		print("==PARENT==", parent)
 
-		if not parent.findChildren(QVBoxLayout):
+		if not parent.findChildren(QVBoxLayout):  # А почему я иду по QVBoxLayout, а не по самим вставляемым классам?
 			vert_lay = QVBoxLayout(parent)
 		else:
 			vert_lay = parent.findChildren(QVBoxLayout)[0]
@@ -334,7 +402,7 @@ class RPD_Window(QMainWindow):
 			e = element(parent)
 			vert_lay.addWidget(e)
 
-		print(parent.findChildren(QVBoxLayout))
+		print('BAZOOKA!', parent.findChildren(QVBoxLayout))
 
 	def deleteBox(self, parent):
 
