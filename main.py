@@ -9,6 +9,7 @@ from inspect import isclass
 import sys, sip, ui_RPD
 
 class competencyBox(QWidget):
+	"""QT Interface class: QGroupBox containing competencies info"""
 
 	def __init__(self, parent):
 
@@ -28,6 +29,7 @@ class competencyBox(QWidget):
 		self.box.setFixedSize(460, 240)
 
 class moduleBox(QWidget):
+	"""QT Interface class: QGroupBox containing semester's module info"""
 
 	def __init__(self, parent):
 
@@ -54,6 +56,7 @@ class moduleBox(QWidget):
 		self.box.setLayout(self.form_lay)
 
 class semesterBox(QWidget):
+	"""QT Interface class: QGroupBox containing semester info"""
 
 	def __init__(self, parent):
 
@@ -153,8 +156,10 @@ class semesterBox(QWidget):
 		self.moduleScrollArea.setWidget(self.moduleScrollAreaWidgetContents)
 
 class RPD_Window(QMainWindow):
+	"""Main Window class"""
 
 	def __init__(self):
+		"""Global fields initialization and elements' signals connection"""
 
 		super(RPD_Window, self).__init__()
 
@@ -166,7 +171,9 @@ class RPD_Window(QMainWindow):
 		self.RPD = None  # может не надо?
 		self.RPD_PATH = None
 
-		self.BOXES = [[self.ui.uploadBox, self.ui.uploadBoxLabel, True], 
+		# list of QGroupBoxes to iterate over
+		# [QGroupBox, QLabel - associated label from side panel, Bool - flag to make QGroupBox visible]
+		self.BOXES = [[self.ui.uploadBox, self.ui.uploadBoxLabel, True],
 			[self.ui.disciplineBox, self.ui.disciplineBoxLabel, False],
 			[self.ui.competencyBox, self.ui.competencyBoxLabel, False],
 			[self.ui.downloadBox, self.ui.label_15, False]]
@@ -186,7 +193,6 @@ class RPD_Window(QMainWindow):
 		for i in range(len(self.BOXES)):
 			if self.BOXES[i][2] == True:
 				if self.sender().text() == "Далее" and i != (len(self.BOXES) - 1):
-					print(i, i+1)
 					self.BOXES[i][2] = False
 					self.BOXES[i][1].setFont(QtGui.QFont("MS Shell Dlg 2", 11, QtGui.QFont.Normal))
 					self.BOXES[i][0].setVisible(False)
@@ -220,34 +226,35 @@ class RPD_Window(QMainWindow):
 
 		TODO: Exceptions
 		"""
-		print("Tyler the creator!")
+		
 		if self.PLAN_FNAME != None and self.SAMPLE_FNAME != None:  # если оба файла заданы
 			self.RPD = commutator.rpd(self.PLAN_FNAME, self.SAMPLE_FNAME)  # создаем экземпляр
 			self.ui.uploadStatusLabel.setText('Успешно!')
 			self.ui.dispComboBox.addItems(  # добавляем в ComboBox доступные дисциплины, объединяя их в строку
 				[i[0] + ' ' + i[1] for i in self.RPD.STUDY_PLAN.list_avail_disciplines()])
+			self.ui.dispShowButton.setEnabled(True)
 			# self.ui.dispComboBox.activated.connect(self.on_dispComboBox_activated)
 			# self.ui.dispShowButton.clicked.connect(self.handleDispShowButtonClicked)
 		else:
 			self.ui.uploadStatusLabel.setText('Не выбраны файлы!')
 
 	def handleDispShowButtonClicked(self):
-		"""Create discipline instance, fill the QLineEdits with information and add competency descriptions to the noext box
+		"""Create discipline instance, fill the QLineEdits with information and add competency descriptions to the next box
 
 		ATTENTION: does not work if called multiple times! 
 		"""
 
 		self.RPD.create_discipline(
 			self.ui.dispComboBox.itemText(
-				self.ui.dispComboBox.currentIndex()).rsplit(' ')[0])
-		self.ui.dispNameEdit.setText(self.RPD.DISCIPLINE.NAME)
+				self.ui.dispComboBox.currentIndex()).rsplit(' ')[0])  # создаем дисциплину, забирая ее код из текста QComboBox
+		self.ui.dispNameEdit.setText(self.RPD.DISCIPLINE.NAME)  # выгружаем информацию о дисциплине в поля формы
 		self.ui.dispFieldEdit.setText(self.RPD.STUDY_PLAN.FIELD_OF_KNOW)
 		self.ui.dispProfileEdit.setText(self.RPD.STUDY_PLAN.PROFILE)
 		self.ui.dispInstituteEdit.setText(self.RPD.STUDY_PLAN.INSTITUTE)
 		self.ui.dispFormEdit.setText(self.RPD.STUDY_PLAN.EDU_FORMAT)
 		self.ui.dispProgEdit.setText(self.RPD.STUDY_PLAN.EDU_PROG)
 		self.ui.dispCathEdit.setText(self.RPD.STUDY_PLAN.CATHEDRA)
-		if self.RPD.DISCIPLINE.PART == True:
+		if self.RPD.DISCIPLINE.PART == True:  # выставляем радиокнопки в соотв с видами дисциплины
 			self.ui.dispPartBaseButton.setChecked(True)
 		else:
 			self.ui.dispPartVarButton.setChecked(True)
@@ -257,33 +264,32 @@ class RPD_Window(QMainWindow):
 			self.ui.dispObligFalseButton.setChecked(True)
 
 		self.addBox(self.ui.compScrollAreaWidgetContents, competencyBox, 
-			len(self.RPD.DISCIPLINE.COMPETENCIES))
-		lineEdits = self.ui.compScrollAreaWidgetContents.findChildren(QLineEdit)
+			len(self.RPD.DISCIPLINE.COMPETENCIES))  # добавление competencyBox в соотв с количеством компетенций дисциплины
+		lineEdits = self.ui.compScrollAreaWidgetContents.findChildren(QLineEdit)  # получаем дочерние элементы типа
 		textEdits = self.ui.compScrollAreaWidgetContents.findChildren(QTextEdit)
 		for i in range(len(lineEdits)):  # это наверняка можно оптимизировать
-			lineEdits[i].setText(self.RPD.DISCIPLINE.COMPETENCIES[i][0])
+			lineEdits[i].setText(self.RPD.DISCIPLINE.COMPETENCIES[i][0])  # вставляем все коды компетенций
 		for i in range(len(textEdits)):
-			textEdits[i].setText(self.RPD.DISCIPLINE.COMPETENCIES[i][1])
+			textEdits[i].setText(self.RPD.DISCIPLINE.COMPETENCIES[i][1])  # вставляем все описания компетенций
 
 		self.ui.compAddButton.clicked.connect(partial(self.addBox,
-			self.ui.compScrollAreaWidgetContents, competencyBox, 1))
-
-		self.ui.compDelButton.clicked.connect(partial(self.deleteBox,
+			self.ui.compScrollAreaWidgetContents, competencyBox, 1))  # присоединение кнопок к методам
+		self.ui.compDelButton.clicked.connect(partial(self.deleteBox,  # partial для вызова метода-приемника сигнала с параметрами
 			self.ui.compScrollAreaWidgetContents))
 
-		for i in range(len(self.RPD.DISCIPLINE.STUDY_HOURS)):
-			e = semesterBox(self.ui.centralwidget)
+		for i in range(len(self.RPD.DISCIPLINE.STUDY_HOURS)):  # добавление вкладок с описанием семестров дисциплины
+			e = semesterBox(self.ui.centralwidget)  # создаем объект класса с родителем - главным виджетом окна
 			e.setGeometry(QtCore.QRect(250, 0, 551, 601))
 			e.setVisible(False)
-			self.BOXES.insert(3 + i, [e, self.ui.label_4, False])
-			e.dicpNameLabel.setText(self.RPD.DISCIPLINE.NAME)
+			self.BOXES.insert(3 + i, [e, self.ui.label_4, False])  # добавляем новый объект в список вкладок после конкретной позиции
+			e.dicpNameLabel.setText(self.RPD.DISCIPLINE.NAME)  # заполнение информации об учебных часах в семестре
 			e.semNoLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][0]))
 			e.lectLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['lect']))
 			e.labLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['lab']))
 			e.practLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['pract']))
 			e.samLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['sam']))
 			e.controlLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['krpa'] 
-				+ self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['control']))
+				+ self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['control']))  # Контроль и КрПа складываем
 			e.totalLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['total']))
 			e.createModuleButton.clicked.connect(partial(self.addBox_module, 
 				e.moduleScrollAreaWidgetContents, moduleBox, 1))
@@ -293,27 +299,20 @@ class RPD_Window(QMainWindow):
 				self.handleSaveModuleButtonClicked, 
 				e.moduleScrollAreaWidgetContents,
 				int(e.semNoLabel.text())))
-			'''
-			print('V')
-			[print(i) for i in e.moduleScrollAreaWidgetContents.findChildren(moduleBox)]
-			print('V')
-			print("Button!", e.createModuleButton)
-			print("Del Button!", e.delModuleButton)
-			print("SAWC!!!", e.moduleScrollAreaWidgetContents)
-			'''
+
+		self.sender().setDisabled(True)
 
 	def handleCompSaveButtonClicked(self):
 		pass
 
 	def handleSpinBoxValueChanged(self, parent):
+		"""Display current hours' quantity as value of QSpinBox changes"""
 
 		lineEdits = parent.moduleScrollArea.findChildren(QLineEdit)
 
-		print(lineEdits)
-
 		lect, lab, pract, sam = 0, 0, 0, 0
 		
-		for i in range(0, len(lineEdits), 5):
+		for i in range(0, len(lineEdits), 5):  # итерация по всем найденным элементам интерфейса
 			lect += int(lineEdits[i + 1].text())
 			lab += int(lineEdits[i + 2].text())
 			pract += int(lineEdits[i + 3].text())
@@ -325,6 +324,7 @@ class RPD_Window(QMainWindow):
 		parent.samRelLabel.setText(str(sam))
 
 	def handleSaveModuleButtonClicked(self, parent, semester):  # почему я не реализовал это как метод класса moduleBox?
+		"""Overwrites discipline.SEMESTER field with values set in the interface"""
 
 		lineEdits = parent.findChildren(QLineEdit)  # QSpinBox представляется как QLineEdit тоже
 		textEdits = parent.findChildren(QTextEdit)
@@ -352,16 +352,17 @@ class RPD_Window(QMainWindow):
 						4,
 						int(lineEdits[k*5 + 4].text()))
 
-		self.sender().setDisabled(True)
+		self.sender().setDisabled(True)  # деактивировать кнопку сохранения
 
 	def handleDownloadPathButtonClicked(self):
+		"""Init QFileDialog to set RPD saving path"""
 		
 		dlg = QFileDialog()
 		dlg.setFileMode(QFileDialog.Directory)
 		self.RPD_PATH = dlg.getExistingDirectory(self, 'Сохранить рабочую программу', 'C\\')
-		self.RPD_PATH = r"{}".format(self.RPD_PATH)
-		self.RPD_PATH = self.RPD_PATH.replace('/', '\\')
-		self.RPD_PATH = self.RPD_PATH + '\\'
+		self.RPD_PATH = r"{}".format(self.RPD_PATH)  # разные методы обработки полученной от QFileDialog строки
+		self.RPD_PATH = self.RPD_PATH.replace('/', '\\')  # возможно взаимозаменяемы
+		self.RPD_PATH = self.RPD_PATH + '\\'  # добавить в конец / чтобы обращаться к директории
 		self.ui.downloadPathLabel.setText(self.RPD_PATH)
 
 	def handleDownloadButtonClicked(self):
@@ -369,15 +370,13 @@ class RPD_Window(QMainWindow):
 		self.RPD.produce(self.RPD_PATH)
 
 	def connectModuleBox(addfunc):
+		"""Decorator for addBox method. Connects added QSpinBoxes to local method"""
 
 		def wrapper(self, parent, element, number):
 			addfunc(self, parent, element, number)
-			[print(parent, i) for i in parent.findChildren(QSpinBox)]
 			e = parent
-			while not isinstance(e, semesterBox):
-				print(e)
+			while not isinstance(e, semesterBox):  # найти тот элемент родитель, в котором есть нужные QLabel
 				e = e.parent()
-			[print(i.text()) for i in e.findChildren(QLabel)]
 			for i in parent.findChildren(QSpinBox):
 				i.valueChanged.connect(partial(self.handleSpinBoxValueChanged, e))
 		
@@ -385,16 +384,24 @@ class RPD_Window(QMainWindow):
 
 	@connectModuleBox
 	def addBox_module(self, parent, element, number):  #какая же это хуйня. 
+		"""Link to addBox method to connect deocrator (and still have access to original method)"""
 
 		self.addBox(parent, element, number)
 
 	def addBox(self, parent, element, number):
+		"""Sequential addition of QGroupBoxes.
+
+		Args:
+			parent (...): parent QWidget to add QGroupBoxes
+			element (class): interface class to add
+			number (int): quantity of elements to add
+		"""
 		
-		print("==SENDER==", self.sender())
-		print("==PARENT==", parent)
+		#print("==SENDER==", self.sender())
+		#print("==PARENT==", parent)
 
 		if not parent.findChildren(QVBoxLayout):  # А почему я иду по QVBoxLayout, а не по самим вставляемым классам?
-			vert_lay = QVBoxLayout(parent)
+			vert_lay = QVBoxLayout(parent)  # добавление в layout для адекватного отображения элементов (не спрашивай)
 		else:
 			vert_lay = parent.findChildren(QVBoxLayout)[0]
 
@@ -402,13 +409,8 @@ class RPD_Window(QMainWindow):
 			e = element(parent)
 			vert_lay.addWidget(e)
 
-		print('BAZOOKA!', parent.findChildren(QVBoxLayout))
-
 	def deleteBox(self, parent):
-
-		print("==SENDER==", self.sender())
-		print("==PARENT==", parent)
-		print(parent.findChildren(QVBoxLayout))
+		"""Delete last QVBoxLayout in parent element"""
 
 		if not parent.findChildren(QVBoxLayout):
 			pass
