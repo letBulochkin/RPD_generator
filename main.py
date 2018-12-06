@@ -16,7 +16,13 @@ class competencyBox(QWidget):
 		super(competencyBox, self).__init__(parent)
 
 		self.compCodeLineEdit = QLineEdit()
+		self.compCodeLineEdit.setDisabled(True)
 		self.compDescrpTextEdit = QTextEdit()
+		self.compDescrpTextEdit.setDisabled(True)
+		self.compPartTextEdit = QTextEdit()
+		self.compKnowTextEdit = QTextEdit()
+		self.compCanTextEdit = QTextEdit()
+		self.compAbilTextEdit = QTextEdit()
 
 		self.lay = QVBoxLayout(self)
 		self.box = QGroupBox(self)
@@ -24,9 +30,13 @@ class competencyBox(QWidget):
 		self.form_lay = QFormLayout(self)
 		self.form_lay.addRow(QLabel("Код: "), self.compCodeLineEdit)
 		self.form_lay.addRow(QLabel("Описание: "), self.compDescrpTextEdit)
+		self.form_lay.addRow(QLabel("в части... "), self.compPartTextEdit)
+		self.form_lay.addRow(QLabel("Знать: "), self.compKnowTextEdit)
+		self.form_lay.addRow(QLabel("Уметь: "), self.compCanTextEdit)
+		self.form_lay.addRow(QLabel("Владеть: "), self.compAbilTextEdit)
 
 		self.box.setLayout(self.form_lay)
-		self.box.setFixedSize(460, 240)
+		# self.box.setFixedSize(460, 240)
 
 class moduleBox(QWidget):
 	"""QT Interface class: QGroupBox containing semester's module info"""
@@ -271,13 +281,10 @@ class RPD_Window(QMainWindow):
 		textEdits = self.ui.compScrollAreaWidgetContents.findChildren(QTextEdit)
 		for i in range(len(lineEdits)):  # это наверняка можно оптимизировать
 			lineEdits[i].setText(self.RPD.DISCIPLINE.COMPETENCIES[i][0])  # вставляем все коды компетенций
-		for i in range(len(textEdits)):
-			textEdits[i].setText(self.RPD.DISCIPLINE.COMPETENCIES[i][1])  # вставляем все описания компетенций
+		for i in range(0, len(textEdits), 5):
+			textEdits[i].setText(self.RPD.DISCIPLINE.COMPETENCIES[i//5][1])  # вставляем все описания компетенций
 
-		self.ui.compAddButton.clicked.connect(partial(self.addBox,
-			self.ui.compScrollAreaWidgetContents, competencyBox, 1))  # присоединение кнопок к методам
-		self.ui.compDelButton.clicked.connect(partial(self.deleteBox,  # partial для вызова метода-приемника сигнала с параметрами
-			self.ui.compScrollAreaWidgetContents))
+		# self.compSaveButton.clicked.connect()
 
 		for i in range(len(self.RPD.DISCIPLINE.STUDY_HOURS)):  # добавление вкладок с описанием семестров дисциплины
 			e = semesterBox(self.ui.centralwidget)  # создаем объект класса с родителем - главным виджетом окна
@@ -293,8 +300,8 @@ class RPD_Window(QMainWindow):
 			e.controlLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['krpa'] 
 				+ self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['control']))  # Контроль и КрПа складываем
 			e.totalLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['total']))
-			e.createModuleButton.clicked.connect(partial(self.addBox_module, 
-				e.moduleScrollAreaWidgetContents, moduleBox, 1))
+			e.createModuleButton.clicked.connect(partial(self.addBox_module,  
+				e.moduleScrollAreaWidgetContents, moduleBox, 1))  # partial для вызова метода-приемника сигнала с параметрами
 			e.delModuleButton.clicked.connect(partial(self.deleteBox,
 				e.moduleScrollAreaWidgetContents))
 			e.saveModuleButton.clicked.connect(partial(

@@ -139,7 +139,7 @@ def range_search(sheet, cell_start, cell_stop, val, mode = "match"):
 				if not c[d].value == val:
 					res.append([c[d].row, c[d].col_idx, c[d].value])
 			elif mode == "in":
-				if val in c[d].value:
+				if c[d].value is not None and val in c[d].value:
 					res.append([c[d].row, c[d].col_idx, c[d].value])
 
 	return res
