@@ -280,11 +280,12 @@ class RPD_Window(QMainWindow):
 		lineEdits = self.ui.compScrollAreaWidgetContents.findChildren(QLineEdit)  # получаем дочерние элементы типа
 		textEdits = self.ui.compScrollAreaWidgetContents.findChildren(QTextEdit)
 		for i in range(len(lineEdits)):  # это наверняка можно оптимизировать
-			lineEdits[i].setText(self.RPD.DISCIPLINE.COMPETENCIES[i][0])  # вставляем все коды компетенций
+			lineEdits[i].setText(self.RPD.DISCIPLINE.COMPETENCIES[i]['code'])  # вставляем все коды компетенций
 		for i in range(0, len(textEdits), 5):
-			textEdits[i].setText(self.RPD.DISCIPLINE.COMPETENCIES[i//5][1])  # вставляем все описания компетенций
+			textEdits[i].setText(self.RPD.DISCIPLINE.COMPETENCIES[i//5]['descrp'])  # вставляем все описания компетенций
 
-		# self.compSaveButton.clicked.connect()
+		self.ui.compSaveButton.clicked.connect(partial(self.handleCompSaveButtonClicked, 
+			self.ui.compScrollAreaWidgetContents))
 
 		for i in range(len(self.RPD.DISCIPLINE.STUDY_HOURS)):  # добавление вкладок с описанием семестров дисциплины
 			e = semesterBox(self.ui.centralwidget)  # создаем объект класса с родителем - главным виджетом окна
@@ -311,8 +312,17 @@ class RPD_Window(QMainWindow):
 
 		self.sender().setDisabled(True)
 
-	def handleCompSaveButtonClicked(self):
-		pass
+	def handleCompSaveButtonClicked(self, parent):
+		
+		textEdits = parent.findChildren(QTextEdit)
+		
+		for i in range(0, len(textEdits), 5):
+			self.RPD.DISCIPLINE.COMPETENCIES[i//5]['part'] = textEdits[i + 1].toPlainText()
+			self.RPD.DISCIPLINE.COMPETENCIES[i//5]['to_know'] = textEdits[i + 2].toPlainText()
+			self.RPD.DISCIPLINE.COMPETENCIES[i//5]['to_can'] = textEdits[i + 3].toPlainText()
+			self.RPD.DISCIPLINE.COMPETENCIES[i//5]['to_be_able'] = textEdits[i + 4].toPlainText()
+
+		self.sender().setDisabled(True)
 
 	def handleSpinBoxValueChanged(self, parent):
 		"""Display current hours' quantity as value of QSpinBox changes"""

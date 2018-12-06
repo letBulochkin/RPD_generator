@@ -86,10 +86,17 @@ class discipline(object):
         r = crawler.range_search(sheet, 'C4', 'D85', self.INDEX)[0][0]
 
         for i in sheet.cell(row = r, column = 6).value.rsplit('; '):
+            q = {}
+            q['code'] = i
             sheet = self.STUDY_PLAN.BOOK['Компетенции']
             cont = sheet.cell(row = crawler.range_search(sheet, 'B3', 'B177', i)[0][0],
                 column = 4).value
-            competencies.append([i, cont])
+            q['descrp'] = cont
+            q['part'] = None
+            q['to_know'] = None
+            q['to_can'] = None
+            q['to_be_able'] = None
+            competencies.append(q)
 
         return competencies
 

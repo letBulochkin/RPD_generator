@@ -37,7 +37,18 @@ class rpd(object):
 		generator.write_to_cell(self.DOC.tables[2], 12, 1, self.DISCIPLINE.STUDY_PLAN.CATHEDRA)
 
 		generator.write_to_par(self.TEXT[4], 0, self.DISCIPLINE.NAME)
-		generator.write_to_par(self.TEXT[4], 1, ', '.join([i[0] for i in self.DISCIPLINE.COMPETENCIES]))
+
+		queue_string = ''
+
+		for i in self.DISCIPLINE.COMPETENCIES:
+			queue_string += ' ' + i['code'].strip() + ' ' + '"'.strip() + i['descrp'].strip() + '"'.strip()
+			if str(i['part']) != "":
+				queue_string += ' в части ' + i['part'].strip()  # должно быть более элегантное решение
+			queue_string += ', ' 
+
+		# generator.write_to_par(self.TEXT[4], 1, ', '.join([i[0] for i in self.DISCIPLINE.COMPETENCIES]))
+		generator.write_to_par(self.TEXT[4], 1, queue_string)
+		
 		generator.write_to_par(self.TEXT[4], 2, self.STUDY_PLAN.FIELD_OF_KNOW)
 		generator.write_to_par(self.TEXT[4], 3, self.STUDY_PLAN.PROFILE)
 
@@ -60,7 +71,24 @@ class rpd(object):
 		generator.write_to_par(self.TEXT[7], 0, str(sum_zach))
 		generator.write_to_par(self.TEXT[7], 1, str(sum_total))
 
-		generator.seq_write_to_table(self.DOC.tables[6], self.DISCIPLINE.COMPETENCIES)
+		queue_list = []
+
+		for i in self.DISCIPLINE.COMPETENCIES:
+			q = []
+			q.append(i['code'])
+			s = '"'.strip() + i['descrp'].strip() + '"'.strip()
+			if str(i['part']) != "":
+				s += ' в части ' + i['part'].strip()
+			q.append(s)
+			s = ''
+			if str(i['to_know']) != "": s += 'Знать ' + i['to_know'].strip() + '\n'
+			if str(i['to_can']) != "": s += 'Уметь ' + i['to_can'].strip() + '\n'
+			if str(i['to_be_able']) != "": s += 'Владеть ' + i['to_be_able'].strip()
+			q.append(s)
+			queue_list.append(q)
+		generator.seq_write_to_table(self.DOC.tables[6], queue_list)
+
+		# generator.seq_write_to_table(self.DOC.tables[6], self.DISCIPLINE.COMPETENCIES)
 
 		for i in range(len(self.DISCIPLINE.STUDY_HOURS)):
 			print('opa!')
