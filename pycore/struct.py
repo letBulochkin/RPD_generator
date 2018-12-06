@@ -4,10 +4,9 @@ from . import crawler
 
 class study_plan(object):
     """
-    Study plan class
+    Study plan class.
 
-    TODO: реализовать все алгоритмы поиска отдельно. 
-    Привести координаты к единому виду
+    TODO: реализовать все алгоритмы поиска отдельно.
     """
 
     def __init__(self, file):
@@ -73,10 +72,7 @@ class discipline(object):
 
         self.COMPETENCIES = self.__get_competencies__()
         self.STUDY_HOURS = self.__get_hours__()
-        self.SEMESTERS = []
-
-        for i in self.__get_semesters__():
-            self.SEMESTERS.append([i, semester()]) 
+        self.SEMESTERS = self.__get_semesters__()
 
     def __get_competencies__(self):
         '''
@@ -114,8 +110,18 @@ class discipline(object):
         search_cell_stop = crawler.coord_to_letter(dicp_cell[0][0], dicp_cell[0][1] + 21)
 
         # по тем ячейкам, где было найдено значение, поднимаемся наверх и смотрим номер семестра
-        for i in crawler.range_search(sheet, search_cell_start, search_cell_stop, None, False):
-            semesters.append(int(sheet.cell(row = 2, column = i[1]).value.rsplit('. ', 1)[1]))
+        for i in crawler.range_search(sheet, search_cell_start, search_cell_stop, None, "notmatch"):
+            q = []
+            sem_no = int(sheet.cell(row = 2, column = i[1]).value.rsplit('. ', 1)[1])  # получаем номер семестра
+            q.extend([sem_no, semester(), False, False])
+            search_st = crawler.coord_to_letter(dicp_cell[0][0], dicp_cell[0][1] + 2)
+            search_fin = crawler.coord_to_letter(dicp_cell[0][0], dicp_cell[0][1] + 3)
+            for k in crawler.range_search(sheet, search_st, search_fin, str(sem_no), "in"):
+                if sheet.cell(row = 3, column = k[1]).value == 'Экза мен':
+                    q[2] = True
+                elif sheet.cell(row = 3, column = k[1]).value == 'Зачет':
+                    q[3] = True
+            semesters.append(q)
 
         return semesters
 
@@ -123,11 +129,12 @@ class discipline(object):
 
         sem = self.__get_semesters__()
         sheet = self.STUDY_PLAN.BOOK['План']
+        res = []
 
         for i in range(len(sem)):
             h = {}
             dicp_cell = crawler.range_search(sheet, 'B6', 'B104', self.INDEX)
-            sem_cell = crawler.range_search(sheet, 'P2', 'BT2', 'Сем. ' + str(sem[i]))
+            sem_cell = crawler.range_search(sheet, 'P2', 'BT2', 'Сем. ' + str(sem[i][0]))
             h['zach_ed'] = crawler.int_eater(sheet.cell(row = dicp_cell[0][0], column = sem_cell[0][1]).value)
             h['total'] = crawler.int_eater(sheet.cell(row = dicp_cell[0][0], column = sem_cell[0][1] + 1).value)
             h['lect'] = crawler.int_eater(sheet.cell(row = dicp_cell[0][0], column = sem_cell[0][1] + 2).value)
@@ -136,9 +143,9 @@ class discipline(object):
             h['sam'] = crawler.int_eater(sheet.cell(row = dicp_cell[0][0], column = sem_cell[0][1] + 5).value)
             h['krpa'] = crawler.int_eater(sheet.cell(row = dicp_cell[0][0], column = sem_cell[0][1] + 6).value)
             h['control'] = crawler.int_eater(sheet.cell(row = dicp_cell[0][0], column = sem_cell[0][1] + 7).value)
-            sem[i] = [sem[i], h]
+            res.append([sem[i][0], h])
 
-        return sem
+        return res
 
 class semester(object):
 
@@ -146,6 +153,8 @@ class semester(object):
 
         self.STUDY_TYPES = Enum('Study_Types', 'lect lab pract sam')
 
+        self.EXAM = None
+        self.ZACHET = None
         self.MODULES = []
         
     def add_module(self, num, description):

@@ -18,7 +18,7 @@ def get_marked_cells(table):
 		for k in range(len(table.row_cells(i))):
 			if table.cell(i, k).text == '<>':  # marker
 				res.append([i, k])
-				break
+				break  # но зачем??
 
 	return res
 

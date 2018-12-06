@@ -106,7 +106,7 @@ def consq_search(sheet, row, col, direction, stopper, val):
 
 	return res	
 
-def range_search(sheet, cell_start, cell_stop, val, match = True):
+def range_search(sheet, cell_start, cell_stop, val, mode = "match"):
 	"""Search in a range of cells [start, stop], where start, stop in letter format.
 	
 	Поиск по диапазону ячеек [cell_start, cell_stop]. Ячейки в 
@@ -117,8 +117,9 @@ def range_search(sheet, cell_start, cell_stop, val, match = True):
 		cell_start (str): left top cell of range in letter format (e.g. 'A15')
 		cell_stop (str): right bottom cell of range in letter format
 		val (str): value to search for
-		match (bool): find all cells that match value or not
-			(default is True)
+		mode (str): choose mode of search: 'match' to find all cells, that match
+			searching value, 'nonmatch' to find opposite, 'in' to find cells that
+			include the value (default: 'match')
 
 	Returns:
 		list: list of all matches, empty if nothing is found	
@@ -131,10 +132,15 @@ def range_search(sheet, cell_start, cell_stop, val, match = True):
 
 	for c in cells:
 		for d in range(dim):
-			if match and c[d].value == val:
-				res.append([c[d].row, c[d].col_idx, c[d].value])
-			elif not match and not c[d].value == val:
-				res.append([c[d].row, c[d].col_idx, c[d].value])
+			if mode == "match":
+				if c[d].value == val:
+					res.append([c[d].row, c[d].col_idx, c[d].value])
+			elif mode == "notmatch":
+				if not c[d].value == val:
+					res.append([c[d].row, c[d].col_idx, c[d].value])
+			elif mode == "in":
+				if val in c[d].value:
+					res.append([c[d].row, c[d].col_idx, c[d].value])
 
 	return res
 	

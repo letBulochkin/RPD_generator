@@ -3,3 +3,4 @@ data
 pycore/__pycache__
 __pycache__
 gui_test
+pycore/genrules.xml
