@@ -86,15 +86,15 @@ def get_marked_paragraphs(doc):
 	res = [[x] for x in doc.paragraphs if x.text != '']  # получаем все непустые параграфы
 
 	for i in range(len(res)):
+		q = []  # подготавливаем список маркеров
 		for k in range(len(res[i][0].runs)):
-			q = []  # подготавливаем список маркеров
 			if "<>" in res[i][0].runs[k].text:  # если в тексте каретки встречается маркер
 				q.append(res[i][0].runs[k])
 			elif "<" in res[i][0].runs[k].text and ">" in res[i][0].runs[k+1].text:  # сли маркер разделен на две сосендние каретки
 				res[i][0].runs[k+1].clear()  # удаляем содержимое второй каретки
 				q.append(res[i][0].runs[k])  # и сохраняем в итоговый список первую 
-			if q != []:  # если найдены маркеры
-				res[i].append(q)
+		if q != []:  # если найдены маркеры
+			res[i].append(q)
 
 	return res
 

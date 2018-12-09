@@ -13,6 +13,8 @@ class rpd(object):
 		#self.__get_paragraphs__()
 		self.TEXT = generator.get_marked_paragraphs(self.DOC)
 
+		self.__check_file__()
+
 	def __get_paragraphs__(self):
 
 		self.TEXT = [[x] for x in self.DOC.paragraphs if x.text != '']  # получить все не пустые параграфы
@@ -27,7 +29,7 @@ class rpd(object):
 
 		self.DOC.save(path + self.PREFIX + title + '.docx')
 
-	def check_file(self):
+	def __check_file__(self):
 
 		table_check_list = [
 			[2, 0, 0], [2, 2, 6], [2, 4, 2], [2, 6, 3], [2, 8, 4], [2, 10, 5], [2, 12, 1], [4, 1, 1], [6, 1, 0],
@@ -49,25 +51,15 @@ class rpd(object):
 
 	def produce(self, path):
 		
-		generator.write_to_cell(self.DOC.tables[2], 0, 0, self.DISCIPLINE.NAME)
-		generator.write_to_cell(self.DOC.tables[2], 2, 6, self.DISCIPLINE.STUDY_PLAN.FIELD_OF_KNOW)
-		generator.write_to_cell(self.DOC.tables[2], 4, 2, self.DISCIPLINE.STUDY_PLAN.PROFILE)
-		generator.write_to_cell(self.DOC.tables[2], 6, 3, self.DISCIPLINE.STUDY_PLAN.INSTITUTE)
-		generator.write_to_cell(self.DOC.tables[2], 8, 4, self.DISCIPLINE.STUDY_PLAN.EDU_FORMAT)
-		generator.write_to_cell(self.DOC.tables[2], 10, 5, self.DISCIPLINE.STUDY_PLAN.EDU_PROG)
-		generator.write_to_cell(self.DOC.tables[2], 12, 1, self.DISCIPLINE.STUDY_PLAN.CATHEDRA)
-
 		generator.write_to_par(self.TEXT[4], 0, self.DISCIPLINE.NAME)
 
 		queue_string = ''
-
 		for i in self.DISCIPLINE.COMPETENCIES:
 			queue_string += ' ' + i['code'].strip() + ' ' + '"'.strip() + i['descrp'].strip() + '"'.strip()
-			if str(i['part']) != "":
+			if str(i['part']) != "" and str(i['part']) != None:
 				queue_string += ' в части ' + i['part'].strip()  # должно быть более элегантное решение
-			queue_string += ', ' 
+			queue_string += ', '
 
-		# generator.write_to_par(self.TEXT[4], 1, ', '.join([i[0] for i in self.DISCIPLINE.COMPETENCIES]))
 		generator.write_to_par(self.TEXT[4], 1, queue_string)
 		
 		generator.write_to_par(self.TEXT[4], 2, self.STUDY_PLAN.FIELD_OF_KNOW)
@@ -92,6 +84,52 @@ class rpd(object):
 		generator.write_to_par(self.TEXT[7], 0, str(sum_zach))
 		generator.write_to_par(self.TEXT[7], 1, str(sum_total))
 
+		generator.write_to_par(self.TEXT[20], 0, self.DISCIPLINE.NAME)
+		generator.write_to_par(self.TEXT[22], 0, self.DISCIPLINE.NAME)
+
+		generator.write_to_par(self.TEXT[40], 0, self.DISCIPLINE.NAME)
+		generator.write_to_par(self.TEXT[40], 1, self.STUDY_PLAN.FIELD_OF_KNOW)
+
+		generator.write_to_par(self.TEXT[44], 0, self.DISCIPLINE.NAME)
+
+		generator.write_to_par(self.TEXT[46], 0, self.DISCIPLINE.NAME)
+		generator.write_to_par(self.TEXT[46], 1, ', '.join(i['code'] for i in self.DISCIPLINE.COMPETENCIES))
+		generator.write_to_par(self.TEXT[46], 2, self.STUDY_PLAN.FIELD_OF_KNOW)
+
+		generator.write_to_par(self.TEXT[48], 0, self.DISCIPLINE.NAME)
+		if not self.DISCIPLINE.OBLIGATION:
+			generator.write_to_par(self.TEXT[48], 1, 'по выбору')
+		else:
+			generator.write_to_par(self.TEXT[48], 1, '')
+		if self.DISCIPLINE.PART:
+			generator.write_to_par(self.TEXT[48], 2, 'базовой части')
+		else:
+			generator.write_to_par(self.TEXT[48], 2, 'вариативной части')
+
+		generator.write_to_par(self.TEXT[48], 3, self.STUDY_PLAN.FIELD_OF_KNOW)
+
+		generator.write_to_par(self.TEXT[49], 0, str(sum_zach))
+		generator.write_to_par(self.TEXT[49], 1, str(sum_total))
+
+		queue_string = ''
+		for i in self.DISCIPLINE.SEMESTERS:
+			if i[3] == True:
+				queue_string += "зачет"
+				break
+		for i in self.DISCIPLINE.SEMESTERS:
+			if i[2] == True:
+				queue_string += ", экзамен"
+				break
+		generator.write_to_par(self.TEXT[50], 0, queue_string)
+
+		generator.write_to_cell(self.DOC.tables[2], 0, 0, self.DISCIPLINE.NAME)
+		generator.write_to_cell(self.DOC.tables[2], 2, 6, self.DISCIPLINE.STUDY_PLAN.FIELD_OF_KNOW)
+		generator.write_to_cell(self.DOC.tables[2], 4, 2, self.DISCIPLINE.STUDY_PLAN.PROFILE)
+		generator.write_to_cell(self.DOC.tables[2], 6, 3, self.DISCIPLINE.STUDY_PLAN.INSTITUTE)
+		generator.write_to_cell(self.DOC.tables[2], 8, 4, self.DISCIPLINE.STUDY_PLAN.EDU_FORMAT)
+		generator.write_to_cell(self.DOC.tables[2], 10, 5, self.DISCIPLINE.STUDY_PLAN.EDU_PROG)
+		generator.write_to_cell(self.DOC.tables[2], 12, 1, self.DISCIPLINE.STUDY_PLAN.CATHEDRA)
+
 		queue_list = []
 
 		for i in self.DISCIPLINE.COMPETENCIES:
@@ -102,9 +140,12 @@ class rpd(object):
 				s += ' в части ' + i['part'].strip()
 			q.append(s)
 			s = ''
-			if str(i['to_know']) != "": s += 'Знать ' + i['to_know'].strip() + '\n'
-			if str(i['to_can']) != "": s += 'Уметь ' + i['to_can'].strip() + '\n'
-			if str(i['to_be_able']) != "": s += 'Владеть ' + i['to_be_able'].strip()
+			if str(i['to_know']) != "" and str(i['to_know']) != None: 
+				s += 'Знать ' + i['to_know'].strip() + '\n'
+			if str(i['to_can']) != "" and str(i['to_can']) != None:
+				s += 'Уметь ' + i['to_can'].strip() + '\n'
+			if str(i['to_be_able']) != "" and str(i['to_be_able']) != None: 
+				s += 'Владеть ' + i['to_be_able'].strip()
 			q.append(s)
 			queue_list.append(q)
 		generator.seq_write_to_table(self.DOC.tables[6], queue_list)
