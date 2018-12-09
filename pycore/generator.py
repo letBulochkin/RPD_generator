@@ -2,6 +2,57 @@ from docx import Document
 from docx.shared import Pt
 from copy import deepcopy
 
+def check_marked_cell(table, row, col):
+	"""Checks whether marker in given table cell exists.
+
+	Args:
+		table (...): docx table object
+		row (int): table row
+		col (int): table column
+
+	Returns:
+		bool: True if marker exists, False if not
+	"""
+
+	if table.cell(row, col).paragraphs[0].runs[0].text == "<>":  # если в указанной ячейке только маркер
+		return True
+	else: 
+		return False
+
+def check_marked_paragraph(paragraph, number):
+	"""Checks if there are a number of markers in given paragraph.
+
+	Args:
+		paragraph (...): docx paragraph object
+		number (int): quantity of markers
+
+	Returns:
+		bool: True if all markers exist and quantity matches with given
+	"""
+
+	q = 0  # счетчик найденных маркеров
+	chars = '<> '  # возможные символы в каретке
+
+	for i in range(len(paragraph.runs)):
+		if "<>" in paragraph.runs[i].text:  # если в тексте каретки встречается маркер
+			for c in paragraph.runs[i].text:  # проверяем каждый символ в каретке
+				if c not in chars:  # если он не входит в список разрешенных символов
+					return False
+			q += 1  # если проверка пройдена, увеличиваем счетчик
+		elif "<" in paragraph.runs[i].text and ">" in paragraph.runs[i+1].text:  # если маркер разделен на две соседние каретки
+			for c in paragraph.runs[i].text:  # проверяем каждую из кареток
+				if c not in chars:
+					return False
+			for c in paragraph.runs[i+1].text:
+				if c not in chars:
+					return False
+			q += 1
+
+	if q != number:  # если количество маркеров не совпало с указанным в выводе
+		return False
+	else:
+		return True
+
 def get_marked_cells(table):
 	"""Returns docx table cells that marked with special marker.
 
@@ -19,6 +70,31 @@ def get_marked_cells(table):
 			if table.cell(i, k).text == '<>':  # marker
 				res.append([i, k])
 				break  # но зачем??
+
+	return res
+
+def get_marked_paragraphs(doc):
+	"""Returns list of paragraphs with special marker.
+
+	Args:
+		doc (...): docx Document object
+
+	Returns:
+		list: list of lists containing paragraph object and list of marked runs
+	"""
+
+	res = [[x] for x in doc.paragraphs if x.text != '']  # получаем все непустые параграфы
+
+	for i in range(len(res)):
+		for k in range(len(res[i][0].runs)):
+			q = []  # подготавливаем список маркеров
+			if "<>" in res[i][0].runs[k].text:  # если в тексте каретки встречается маркер
+				q.append(res[i][0].runs[k])
+			elif "<" in res[i][0].runs[k].text and ">" in res[i][0].runs[k+1].text:  # сли маркер разделен на две сосендние каретки
+				res[i][0].runs[k+1].clear()  # удаляем содержимое второй каретки
+				q.append(res[i][0].runs[k])  # и сохраняем в итоговый список первую 
+			if q != []:  # если найдены маркеры
+				res[i].append(q)
 
 	return res
 

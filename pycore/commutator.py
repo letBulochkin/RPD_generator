@@ -10,7 +10,8 @@ class rpd(object):
 		self.PREFIX = 'РАБОЧАЯ_ПРОГРАММА_'
 		self.ADDED_TABLES = 0
 
-		self.__get_paragraphs__()
+		#self.__get_paragraphs__()
+		self.TEXT = generator.get_marked_paragraphs(self.DOC)
 
 	def __get_paragraphs__(self):
 
@@ -25,6 +26,26 @@ class rpd(object):
 	def __write_file__(self, path, title):
 
 		self.DOC.save(path + self.PREFIX + title + '.docx')
+
+	def check_file(self):
+
+		table_check_list = [
+			[2, 0, 0], [2, 2, 6], [2, 4, 2], [2, 6, 3], [2, 8, 4], [2, 10, 5], [2, 12, 1], [4, 1, 1], [6, 1, 0],
+			[6, 1, 1], [6, 1, 2], [7, 3, 0], [7, 3, 1], [7, 3, 2], [7, 3, 3], [7, 3, 4], [7, 3, 5], [7, 3, 6],
+			[7, 3, 7], [8, 1, 0], [8, 1, 1], [8, 1, 2], [9, 1, 0], [9, 1, 1], [9, 1, 2], [10, 1, 0], [10, 1, 1],
+			[10, 1, 2], [12, 2, 4], [13, 1, 0], [14, 1, 0], [15, 1, 0], [16, 1, 0], [16, 1, 1], [17, 1, 0],
+			[17, 1, 1], [18, 1, 0], [18, 1, 1]
+		]
+
+		par_check_list = [
+			[4, 4], [6, 4], [7, 2], [20, 1], [22, 1], [40, 2], [44, 1], [46, 3], [48, 4], [49, 2], [50, 1], [53, 1], [72, 2]
+		]
+
+		for i in table_check_list:
+			assert generator.check_marked_cell(self.DOC.tables[i[0]], i[1], i[2]), "Ошибка чтения маркера в таблице {} в клетке {}, {}".format(i[0], i[1], i[2])
+
+		for i in par_check_list:
+			assert generator.check_marked_paragraph(self.TEXT[i[0]][0], i[1]), "Ошибка чтения маркера в абзаце {}:".format(i[0]) + self.TEXT[i[0]][0].text[0:30] + "..."
 
 	def produce(self, path):
 		
