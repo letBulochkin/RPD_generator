@@ -65,6 +65,26 @@ class moduleBox(QWidget):
 
 		self.box.setLayout(self.form_lay)
 
+class taskBox(QWidget):
+
+	def __init__(self, parent):
+
+		super(taskBox, self).__init__(parent)
+
+		self.taskNoLineEdit = QLineEdit()
+		self.taskThemeTextEdit = QTextEdit()
+		self.taskHoursSpinBox = QSpinBox()
+
+		self.lay = QVBoxLayout(self)
+		self.box = QGroupBox(self)
+		self.lay.addWidget(self.box)
+		self.form_lay = QFormLayout(self)
+		self.form_lay.addRow(QLabel("Номер: "), self.taskNoLineEdit)
+		self.form_lay.addRow(QLabel("Тема: "), self.taskThemeTextEdit)
+		self.form_lay.addRow(QLabel("Часов: "), self.taskHoursSpinBox)
+
+		self.box.setLayout(self.form_lay)
+
 class semesterBox(QWidget):
 	"""QT Interface class: QGroupBox containing semester info"""
 
@@ -186,6 +206,8 @@ class RPD_Window(QMainWindow):
 		self.BOXES = [[self.ui.uploadBox, self.ui.uploadBoxLabel, True],
 			[self.ui.disciplineBox, self.ui.disciplineBoxLabel, False],
 			[self.ui.competencyBox, self.ui.competencyBoxLabel, False],
+			[self.ui.labBox, self.ui.labBoxLabel, False],
+			[self.ui.practBox, self.ui.practBoxLabel, False],
 			[self.ui.downloadBox, self.ui.label_15, False]]
 
 		self.ui.backButton.clicked.connect(self.browseBox)  # можно перенести в handleCreateButtonClicked
@@ -310,6 +332,32 @@ class RPD_Window(QMainWindow):
 				e.moduleScrollAreaWidgetContents,
 				int(e.semNoLabel.text())))
 
+		self.ui.labCreateButton.clicked.connect(partial(self.addBox_lab,
+			self.ui.labScrollAreaWidgetContents, taskBox, 1))
+		self.ui.labDeleteButton.clicked.connect(partial(self.deleteBox,
+			self.ui.labScrollAreaWidgetContents))
+
+		ls = 0
+		for i in range(len(self.RPD.DISCIPLINE.STUDY_HOURS)):
+			ls += self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['lab']
+
+		self.ui.labTotalLabel.setText(str(ls))
+		if ls != 0:
+			self.ui.labSaveButton.clicked.connect(self.handleLabSaveButtonClicked)
+
+		self.ui.practCreateButton.clicked.connect(partial(self.addBox_pract,
+			self.ui.practScrollAreaWidgetContents, taskBox, 1))
+		self.ui.practDeleteButton.clicked.connect(partial(self.deleteBox,
+			self.ui.practScrollAreaWidgetContents))
+
+		ps = 0
+		for i in range(len(self.RPD.DISCIPLINE.STUDY_HOURS)):
+			ps += self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['pract']
+
+		self.ui.practTotalLabel.setText(str(ps))
+		if ps != 0:
+			self.ui.practSaveButton.clicked.connect(self.handlePractSaveButtonClicked)
+
 		self.sender().setDisabled(True)
 
 	def handleCompSaveButtonClicked(self, parent):
@@ -341,6 +389,56 @@ class RPD_Window(QMainWindow):
 		parent.labRelLabel.setText(str(lab))
 		parent.practRelLabel.setText(str(pract))
 		parent.samRelLabel.setText(str(sam))
+
+	def handleLabSpinBoxValueChanged(self, parent):
+
+		lineEdits = self.ui.labScrollArea.findChildren(QLineEdit)
+
+		h = 0
+
+		for i in range(0, len(lineEdits), 2):
+			h += int(lineEdits[i+1].text())
+
+		self.ui.labRelLabel.setText(str(h))
+
+	def handleLabSaveButtonClicked(self):
+
+		lineEdits = self.ui.labScrollArea.findChildren(QLineEdit)
+		textEdits = self.ui.labScrollArea.findChildren(QTextEdit)
+
+		for i in range(0, len(lineEdits), 2):
+			q = []
+			q.append(lineEdits[i].text())
+			q.append(textEdits[i//2].toPlainText())
+			q.append(lineEdits[i+1].text())
+			self.RPD.DISCIPLINE.LABS.append(q)
+
+		self.sender().setDisabled(True)
+
+	def handlePractSpinBoxValueChanged(self, parent):
+
+		lineEdits = self.ui.practScrollArea.findChildren(QLineEdit)
+
+		h = 0
+
+		for i in range(0, len(lineEdits), 2):
+			h += int(lineEdits[i+1].text())
+
+		self.ui.practRelLabel.setText(str(h))
+
+	def handlePractSaveButtonClicked(self):
+
+		lineEdits = self.ui.practScrollArea.findChildren(QLineEdit)
+		textEdits = self.ui.practScrollArea.findChildren(QTextEdit)
+
+		for i in range(0, len(lineEdits), 2):
+			q = []
+			q.append(lineEdits[i].text())
+			q.append(textEdits[i//2].toPlainText())
+			q.append(lineEdits[i+1].text())
+			self.RPD.DISCIPLINE.PRACT.append(q)
+
+		self.sender().setDisabled(True)
 
 	def handleSaveModuleButtonClicked(self, parent, semester):  # почему я не реализовал это как метод класса moduleBox?
 		"""Overwrites discipline.SEMESTER field with values set in the interface"""
@@ -405,6 +503,44 @@ class RPD_Window(QMainWindow):
 
 	@connectModuleBox
 	def addBox_module(self, parent, element, number):  #какая же это хуйня. 
+		"""Link to addBox method to connect decorator (and still have access to original method)"""
+
+		self.addBox(parent, element, number)
+
+	def connectLabBox(addfunc):
+		"""Decorator for addBox method. Connects added QSpinBoxes to local method"""
+
+		def wrapper(self, parent, element, number):
+			addfunc(self, parent, element, number)
+			e = parent
+			while not isinstance(e, type(self.ui.labBox)):  # найти тот элемент родитель, в котором есть нужные QLabel
+				e = e.parent()
+			for i in parent.findChildren(QSpinBox):
+				i.valueChanged.connect(self.handleLabSpinBoxValueChanged)
+		
+		return wrapper
+
+	@connectLabBox
+	def addBox_lab(self, parent, element, number):  #какая же это хуйня. 
+		"""Link to addBox method to connect decorator (and still have access to original method)"""
+
+		self.addBox(parent, element, number)
+
+	def connectPractBox(addfunc):
+		"""Decorator for addBox method. Connects added QSpinBoxes to local method"""
+
+		def wrapper(self, parent, element, number):
+			addfunc(self, parent, element, number)
+			e = parent
+			while not isinstance(e, type(self.ui.practBox)):  # найти тот элемент родитель, в котором есть нужные QLabel
+				e = e.parent()
+			for i in parent.findChildren(QSpinBox):
+				i.valueChanged.connect(self.handlePractSpinBoxValueChanged)
+		
+		return wrapper
+
+	@connectPractBox
+	def addBox_pract(self, parent, element, number):  #какая же это хуйня. 
 		"""Link to addBox method to connect decorator (and still have access to original method)"""
 
 		self.addBox(parent, element, number)

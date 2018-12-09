@@ -73,6 +73,8 @@ class discipline(object):
         self.COMPETENCIES = self.__get_competencies__()
         self.STUDY_HOURS = self.__get_hours__()
         self.SEMESTERS = self.__get_semesters__()
+        self.LABS = []
+        self.PRACT = []
 
     def __get_competencies__(self):
         '''

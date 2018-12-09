@@ -137,5 +137,17 @@ class rpd(object):
 		generator.remove_table(self.DOC.tables[8 + sdv])
 		self.ADDED_TABLES -= 1
 
+		if self.DISCIPLINE.LABS != []:
+			generator.seq_write_to_table(self.DOC.tables[9 + self.ADDED_TABLES], self.DISCIPLINE.LABS)
+		else:
+			generator.remove_table(self.DOC.tables[9 + self.ADDED_TABLES])
+			self.ADDED_TABLES -= 1
+
+		if self.DISCIPLINE.PRACT != []:
+			generator.seq_write_to_table(self.DOC.tables[10 + self.ADDED_TABLES], self.DISCIPLINE.PRACT)
+		else:
+			generator.remove_table(self.DOC.tables[10 + self.ADDED_TABLES])
+			self.ADDED_TABLES -= 1			
+
 		#self.__write_file__("C:\\Users\\Anton Firsov\\Documents\\Python\\RPD_generator\\data\\", self.DISCIPLINE.INDEX)
 		self.__write_file__(path, self.DISCIPLINE.INDEX)
