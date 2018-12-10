@@ -260,17 +260,20 @@ class RPD_Window(QMainWindow):
 		"""
 		
 		if self.PLAN_FNAME != None and self.SAMPLE_FNAME != None:  # если оба файла заданы
-			self.RPD = commutator.rpd(self.PLAN_FNAME, self.SAMPLE_FNAME)  # создаем экземпляр
-			self.ui.uploadStatusLabel.setText('Успешно!')
-			self.ui.dispComboBox.addItems(  # добавляем в ComboBox доступные дисциплины, объединяя их в строку
-				[i[0] + ' ' + i[1] for i in self.RPD.STUDY_PLAN.list_avail_disciplines()])
-			self.ui.dispShowButton.setEnabled(True)
+			try:
+				self.RPD = commutator.rpd(self.PLAN_FNAME, self.SAMPLE_FNAME)  # создаем экземпляр
+			except AssertionError as err:
+				self.ui.uploadStatusLabel.setText(err.args[0])
+			else:
+				self.ui.uploadStatusLabel.setText('Успешно!')
+				self.ui.dispComboBox.addItems(  # добавляем в ComboBox доступные дисциплины, объединяя их в строку
+					[i[0] + ' ' + i[1] for i in self.RPD.STUDY_PLAN.list_avail_disciplines()])
+				self.ui.dispShowButton.setEnabled(True)
+				self.sender().setDisabled(True)
 			# self.ui.dispComboBox.activated.connect(self.on_dispComboBox_activated)
 			# self.ui.dispShowButton.clicked.connect(self.handleDispShowButtonClicked)
 		else:
 			self.ui.uploadStatusLabel.setText('Не выбраны файлы!')
-
-		self.sender().setDisabled(True)
 
 	def handleDispShowButtonClicked(self):
 		"""Create discipline instance, fill the QLineEdits with information and add competency descriptions to the next box
