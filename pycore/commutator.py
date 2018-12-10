@@ -36,7 +36,7 @@ class rpd(object):
 			[6, 1, 1], [6, 1, 2], [7, 3, 0], [7, 3, 1], [7, 3, 2], [7, 3, 3], [7, 3, 4], [7, 3, 5], [7, 3, 6],
 			[7, 3, 7], [8, 1, 0], [8, 1, 1], [8, 1, 2], [9, 1, 0], [9, 1, 1], [9, 1, 2], [10, 1, 0], [10, 1, 1],
 			[10, 1, 2], [12, 2, 4], [13, 1, 0], [14, 1, 0], [15, 1, 0], [16, 1, 0], [16, 1, 1], [17, 1, 0],
-			[17, 1, 1], [18, 1, 0], [18, 1, 1]
+			[17, 1, 1], [17, 1, 2], [18, 1, 0], [18, 1, 1], [18, 1, 2]
 		]
 
 		par_check_list = [
@@ -122,6 +122,11 @@ class rpd(object):
 				break
 		generator.write_to_par(self.TEXT[50], 0, queue_string)
 
+		generator.write_to_par(self.TEXT[53], 0, self.DISCIPLINE.NAME)
+
+		generator.write_to_par(self.TEXT[72], 0, self.DISCIPLINE.NAME)
+		generator.write_to_par(self.TEXT[72], 1, queue_string)
+
 		generator.write_to_cell(self.DOC.tables[2], 0, 0, self.DISCIPLINE.NAME)
 		generator.write_to_cell(self.DOC.tables[2], 2, 6, self.DISCIPLINE.STUDY_PLAN.FIELD_OF_KNOW)
 		generator.write_to_cell(self.DOC.tables[2], 4, 2, self.DISCIPLINE.STUDY_PLAN.PROFILE)
@@ -131,7 +136,6 @@ class rpd(object):
 		generator.write_to_cell(self.DOC.tables[2], 12, 1, self.DISCIPLINE.STUDY_PLAN.CATHEDRA)
 
 		queue_list = []
-
 		for i in self.DISCIPLINE.COMPETENCIES:
 			q = []
 			q.append(i['code'])
@@ -209,7 +213,79 @@ class rpd(object):
 			generator.seq_write_to_table(self.DOC.tables[10 + self.ADDED_TABLES], self.DISCIPLINE.PRACT)
 		else:
 			generator.remove_table(self.DOC.tables[10 + self.ADDED_TABLES])
-			self.ADDED_TABLES -= 1			
+			self.ADDED_TABLES -= 1
+
+		queue_string = ''
+		for i in self.DISCIPLINE.SEMESTERS:
+			if i[3] == True:
+				queue_string += "зачет"
+				break
+		for i in self.DISCIPLINE.SEMESTERS:
+			if i[2] == True:
+				queue_string += ", экзамен"
+				break
+		generator.write_to_cell(self.DOC.tables[12 + self.ADDED_TABLES], 2, 4, queue_string)
+
+		queue_string = ''
+		for i in self.DISCIPLINE.COMPETENCIES:
+			if str(i['to_know']) != "" and str(i['to_know']) != None:
+				queue_string += ' ' + str(i['to_know']) + ';'
+		generator.write_to_cell(self.DOC.tables[13 + self.ADDED_TABLES], 1, 0, queue_string)
+
+		queue_string = ''
+		for i in self.DISCIPLINE.COMPETENCIES:
+			if str(i['to_can']) != "" and str(i['to_can']) != None:
+				queue_string += ' ' + str(i['to_can']) + ';'
+		generator.write_to_cell(self.DOC.tables[14 + self.ADDED_TABLES], 1, 0, queue_string)
+
+		queue_string = ''
+		for i in self.DISCIPLINE.COMPETENCIES:
+			if str(i['to_be_able']) != "" and str(i['to_be_able']) != None:
+				queue_string += ' ' + str(i['to_be_able']) + ';'
+		generator.write_to_cell(self.DOC.tables[15 + self.ADDED_TABLES], 1, 0, queue_string)
+
+		generator.seq_write_to_table(self.DOC.tables[16 + self.ADDED_TABLES], self.STUDY_PLAN.PRACTICE_TYPES)
+
+		queue_list = []
+		for i in self.DISCIPLINE.COMPETENCIES:
+			q = []
+			q.append(i['code'])
+			s = '"'.strip() + i['descrp'].strip() + '"'.strip()
+			if str(i['part']) != "":
+				s += ' в части ' + i['part'].strip()
+			q.append(s)
+			s = ''
+			if str(i['to_know']) != "" and str(i['to_know']) != None: 
+				s += 'Знать ' + i['to_know'].strip() + '\n'
+			if str(i['to_can']) != "" and str(i['to_can']) != None:
+				s += 'Уметь ' + i['to_can'].strip() + '\n'
+			if str(i['to_be_able']) != "" and str(i['to_be_able']) != None: 
+				s += 'Владеть ' + i['to_be_able'].strip()
+			q.append(s)
+			queue_list.append(q)
+		generator.seq_write_to_table(self.DOC.tables[17 + self.ADDED_TABLES], queue_list)
+
+		queue_list = []
+		for i in self.DISCIPLINE.COMPETENCIES:
+			if str(i['to_know']) != "" and str(i['to_know']) != None:
+				q = []
+				q.append('Знать (' + i['code'] + ')')
+				q.append('Знать ' + i['to_know'])
+				q.append('Выполнение устных/письменных заданий')
+				queue_list.append(q)
+			if str(i['to_can']) != "" and str(i['to_can']) != None:
+				q = []
+				q.append('Уметь (' + i['code'] + ')')
+				q.append('Уметь ' + i['to_can'])
+				q.append('Выполнение устных/письменных заданий')
+				queue_list.append(q)
+			if str(i['to_be_able']) != "" and str(i['to_be_able']) != None:
+				q = []
+				q.append('Владеть (' + i['code'] + ')')
+				q.append('Владеть ' + i['to_be_able'])
+				q.append('Выполнение устных/письменных заданий')
+				queue_list.append(q)
+		generator.seq_write_to_table(self.DOC.tables[18 + self.ADDED_TABLES], queue_list)
 
 		#self.__write_file__("C:\\Users\\Anton Firsov\\Documents\\Python\\RPD_generator\\data\\", self.DISCIPLINE.INDEX)
 		self.__write_file__(path, self.DISCIPLINE.INDEX)

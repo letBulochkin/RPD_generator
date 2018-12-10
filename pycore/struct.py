@@ -33,6 +33,8 @@ class study_plan(object):
         self.EDU_TIME = sheet['A32'].value.rsplit('Срок обучения: ', 1)[1]  # поправить, убрать приписку г
         self.START_YEAR = sheet['T29'].value
 
+        self.PRACTICE_TYPES = [[i[2]] for i in crawler.range_search(sheet, 'C38', 'C39', '', mode = "notmatch")]
+
     def data_parse(self):
         pass
 

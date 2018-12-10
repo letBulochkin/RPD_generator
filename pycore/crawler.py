@@ -61,7 +61,8 @@ def letter_to_coord(letter):
 
 	return [row, col]
 
-def consq_search(sheet, row, col, direction, stopper, val):
+'''
+def consq_search(sheet, row, col, direction, stopper, val, mode = "match"):
 	"""Consequtive search in the table cells starting from cell (row, col) until value-stopper is found
 	
 	Последовательный поиск в ячейках таблицы начиная с ячейки 
@@ -76,6 +77,9 @@ def consq_search(sheet, row, col, direction, stopper, val):
 		direction (str): 'lr' or 'tb' left to right or top to bottom search
 		stopper (str): Value-stopper
 		val (str): value to search for
+		mode (str): choose mode of search: 'match' to find all cells, that match
+			searching value, 'nonmatch' to find opposite, 'in' to find cells that
+			include the value (default: 'match')
 
 	Returns:
 		list: list of all matches
@@ -93,18 +97,27 @@ def consq_search(sheet, row, col, direction, stopper, val):
 			cl = sheet.cell(row = row, column = i).value
 			if cl == stopper:
 				break
-			elif cl == val:
+			elif mode == 'match' and cl == val:
+				res.append([row, i, cl])
+			elif mode == 'notmatch' and cl != val:
+				res.append([row, i, cl])
+			elif mode == 'in' and val in cl:
 				res.append([row, i, cl])
 			i += 1
 		elif direction == 'tb':
 			cl = sheet.cell(row = i, column = col).value
 			if cl == stopper:
 				break
-			elif cl == val:
+			elif mode == 'match' and cl == val:
+				res.append([i, col, cl])
+			elif mode == 'notmatch' and cl != val:
+				res.append([i, col, cl])
+			elif mode == 'in' and val in cl:
 				res.append([i, col, cl])
 			i += 1
 
 	return res	
+'''
 
 def range_search(sheet, cell_start, cell_stop, val, mode = "match"):
 	"""Search in a range of cells [start, stop], where start, stop in letter format.
