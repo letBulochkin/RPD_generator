@@ -43,12 +43,22 @@ class rpd(object):
 			[4, 4], [6, 4], [7, 2], [20, 1], [22, 1], [40, 2], [44, 1], [46, 3], [48, 4], [49, 2], [50, 1], [53, 1], [72, 2]
 		]
 
+		par_in_cells_check_list = [[11, 0, 0, 3], [19, 0, 0, 1]]
+
 		for i in table_check_list:
-			assert generator.check_marked_cell(self.DOC.tables[i[0]], i[1], i[2]), "Ошибка чтения маркера в таблице {} в клетке {}, {}".format(i[0], i[1], i[2])
+			assert generator.check_marked_cell(
+				self.DOC.tables[i[0]], i[1], i[2]), "Ошибка чтения маркера в таблице {} в клетке {}, {}".format(i[0], i[1], i[2])
 
 		for i in par_check_list:
-			assert generator.check_marked_paragraph(self.TEXT[i[0]][0], i[1]), "Ошибка чтения маркера в абзаце {}:".format(i[0]) + self.TEXT[i[0]][0].text[0:30] + "..."
+			assert generator.check_marked_paragraph(
+				self.TEXT[i[0]][0], i[1]), "Ошибка чтения маркера в абзаце {}:".format(i[0]) + self.TEXT[i[0]][0].text[0:30] + "..."
 
+		'''
+		for i in par_in_cells_check_list:
+			assert generator.check_marked_paragraph(
+				self.DOC.tables[i[0]].cell(i[1], i[2]), i[3]), "Ошибка чтения маркеров в таблице {} в ячейке {}, {}".format(i[0], i[1], i[2])
+		'''
+		
 	def produce(self, path):
 		
 		generator.write_to_par(self.TEXT[4], 0, self.DISCIPLINE.NAME)
@@ -215,6 +225,36 @@ class rpd(object):
 			generator.remove_table(self.DOC.tables[10 + self.ADDED_TABLES])
 			self.ADDED_TABLES -= 1
 
+		reserve_t = self.DOC.tables[11 + self.ADDED_TABLES]
+		base_par = [i for i in self.DOC.paragraphs if 'Комплекты контрольных заданий' in i.text]
+		queue_string = ''
+		for k in self.DISCIPLINE.COMPETENCIES:
+			queue_string += ' ' + k['code'].strip()
+		for i in self.DISCIPLINE.SEMESTERS:
+			if i[3] == True:
+				parg = base_par[0].insert_paragraph_before(' ')
+				generator.copy_table_after(reserve_t, parg)
+				self.ADDED_TABLES += 1
+				t = self.DOC.tables[11 + self.ADDED_TABLES]
+				pars = generator.get_marked_paragraphs(t.cell(0,0))
+				generator.write_to_par(pars[0], 0, 'зачету')
+				generator.write_to_par(pars[0], 1, str(i[0]))
+				generator.write_to_par(pars[0], 2, queue_string)
+				break
+		for i in self.DISCIPLINE.SEMESTERS:
+			if i[2] == True:
+				parg = base_par[0].insert_paragraph_before(' ')
+				generator.copy_table_after(reserve_t, parg)
+				self.ADDED_TABLES += 1
+				t = self.DOC.tables[11 + self.ADDED_TABLES]
+				pars = generator.get_marked_paragraphs(t.cell(0,0))
+				generator.write_to_par(pars[0], 0, 'экзамену')
+				generator.write_to_par(pars[0], 1, str(i[0]))
+				generator.write_to_par(pars[0], 2, queue_string)
+				break
+		generator.remove_table(reserve_t)
+		self.ADDED_TABLES -= 1
+
 		queue_string = ''
 		for i in self.DISCIPLINE.SEMESTERS:
 			if i[3] == True:
@@ -287,5 +327,28 @@ class rpd(object):
 				queue_list.append(q)
 		generator.seq_write_to_table(self.DOC.tables[18 + self.ADDED_TABLES], queue_list)
 
+		reserve_t = self.DOC.tables[19 + self.ADDED_TABLES]
+		base_par = [i for i in self.DOC.paragraphs if 'Шкала оценивания:' in i.text]
+		for i in self.DISCIPLINE.SEMESTERS:
+			if i[3] == True:
+				parg = base_par[0].insert_paragraph_before(' ')
+				generator.copy_table_after(reserve_t, parg)
+				self.ADDED_TABLES += 1
+				t = self.DOC.tables[19 + self.ADDED_TABLES]
+				pars = generator.get_marked_paragraphs(t.cell(0,0))
+				generator.write_to_par(pars[0], 0, 'зачету')
+				break
+		for i in self.DISCIPLINE.SEMESTERS:
+			if i[2] == True:
+				parg = base_par[0].insert_paragraph_before(' ')
+				generator.copy_table_after(reserve_t, parg)
+				self.ADDED_TABLES += 1
+				t = self.DOC.tables[19 + self.ADDED_TABLES]
+				pars = generator.get_marked_paragraphs(t.cell(0,0))
+				generator.write_to_par(pars[0], 0, 'экзамену')
+				break
+		generator.remove_table(reserve_t)
+		self.ADDED_TABLES -= 1
+
 		#self.__write_file__("C:\\Users\\Anton Firsov\\Documents\\Python\\RPD_generator\\data\\", self.DISCIPLINE.INDEX)
-		self.__write_file__(path, self.DISCIPLINE.INDEX)
+		self.__write_file__(path, self.DISCIPLINE.INDEX + '_' + self.DISCIPLINE.NAME)
