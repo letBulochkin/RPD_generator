@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (QWidget, QApplication, QMainWindow,
 from pycore import commutator
 from functools import partial
 from inspect import isclass
+from openpyxl.utils.exceptions import InvalidFileException
 import os, sys, sip, ui_RPD
 
 class competencyBox(QWidget):
@@ -264,6 +265,8 @@ class RPD_Window(QMainWindow):
 				self.RPD = commutator.rpd(self.PLAN_FNAME, self.SAMPLE_FNAME)  # создаем экземпляр
 			except AssertionError as err:
 				self.ui.uploadStatusLabel.setText(err.args[0])
+			except InvalidFileException:
+				self.ui.uploadStatusLabel.setText('Формат файла .xls. Сохраните файл в формате .xlsx')
 			else:
 				self.ui.uploadStatusLabel.setText('Успешно!')
 				self.ui.dispComboBox.addItems(  # добавляем в ComboBox доступные дисциплины, объединяя их в строку

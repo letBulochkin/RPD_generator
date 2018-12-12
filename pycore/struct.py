@@ -87,7 +87,7 @@ class discipline(object):
         competencies = []
         sheet = self.STUDY_PLAN.BOOK['Компетенции(2)']
         
-        r = crawler.range_search(sheet, 'C4', 'D85', self.INDEX)[0][0]
+        r = crawler.range_search(sheet, 'A2', 'C85', self.INDEX)[0][0]
 
         for i in sheet.cell(row = r, column = 6).value.rsplit('; '):
             q = {}
