@@ -203,13 +203,13 @@ class RPD_Window(QMainWindow):
 		self.RPD_PATH = None
 
 		# list of QGroupBoxes to iterate over
-		# [QGroupBox, QLabel - associated label from side panel, Bool - flag to make QGroupBox visible]
-		self.BOXES = [[self.ui.uploadBox, self.ui.uploadBoxLabel, True],
-			[self.ui.disciplineBox, self.ui.disciplineBoxLabel, False],
-			[self.ui.competencyBox, self.ui.competencyBoxLabel, False],
-			[self.ui.labBox, self.ui.labBoxLabel, False],
-			[self.ui.practBox, self.ui.practBoxLabel, False],
-			[self.ui.downloadBox, self.ui.label_15, False]]
+		# [QGroupBox, QLabel - associated label from side panel, Bool - flag to make QGroupBox visible, Bool - flag to make forwButton disabled]
+		self.BOXES = [[self.ui.uploadBox, self.ui.uploadBoxLabel, True, True],
+			[self.ui.disciplineBox, self.ui.disciplineBoxLabel, False, True],
+			[self.ui.competencyBox, self.ui.competencyBoxLabel, False, True],
+			[self.ui.labBox, self.ui.labBoxLabel, False, True],
+			[self.ui.practBox, self.ui.practBoxLabel, False, True],
+			[self.ui.downloadBox, self.ui.label_15, False, True]]
 
 		self.ui.backButton.clicked.connect(self.browseBox)  # можно перенести в handleCreateButtonClicked
 		self.ui.forwButton.clicked.connect(self.browseBox)
@@ -232,6 +232,7 @@ class RPD_Window(QMainWindow):
 					self.BOXES[i+1][2] = True
 					self.BOXES[i+1][1].setFont(QtGui.QFont("MS Shell Dlg 2", 11, QtGui.QFont.Bold))
 					self.BOXES[i+1][0].setVisible(True)
+					self.sender().setDisabled(self.BOXES[i+1][3])  # disable forwButton if set True
 					break
 				elif self.sender().text() == "Вернуться назад" and i != 0:
 					self.BOXES[i][2] = False
@@ -273,6 +274,7 @@ class RPD_Window(QMainWindow):
 					[i[0] + ' ' + i[1] for i in self.RPD.STUDY_PLAN.list_avail_disciplines()])
 				self.ui.dispShowButton.setEnabled(True)
 				self.sender().setDisabled(True)
+				self.ui.forwButton.setEnabled(True)
 			# self.ui.dispComboBox.activated.connect(self.on_dispComboBox_activated)
 			# self.ui.dispShowButton.clicked.connect(self.handleDispShowButtonClicked)
 		else:
@@ -315,11 +317,47 @@ class RPD_Window(QMainWindow):
 		self.ui.compSaveButton.clicked.connect(partial(self.handleCompSaveButtonClicked, 
 			self.ui.compScrollAreaWidgetContents))
 
+		self.ui.labCreateButton.clicked.connect(partial(self.addBox_lab,
+			self.ui.labScrollAreaWidgetContents, taskBox, 1))
+		self.ui.labDeleteButton.clicked.connect(partial(self.deleteBox,
+			self.ui.labScrollAreaWidgetContents))
+
+		ls = 0
+		for i in range(len(self.RPD.DISCIPLINE.STUDY_HOURS)):
+			ls += self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['lab']
+
+		self.ui.labTotalLabel.setText(str(ls))
+		if ls != 0:
+			self.ui.labSaveButton.clicked.connect(self.handleLabSaveButtonClicked)
+		else:
+			self.ui.labCreateButton.setDisabled(True)
+			self.ui.labDeleteButton.setDisabled(True)
+			self.ui.labSaveButton.setDisabled(True)
+			self.BOXES[3][3] = False
+
+		self.ui.practCreateButton.clicked.connect(partial(self.addBox_pract,
+			self.ui.practScrollAreaWidgetContents, taskBox, 1))
+		self.ui.practDeleteButton.clicked.connect(partial(self.deleteBox,
+			self.ui.practScrollAreaWidgetContents))
+
+		ps = 0
+		for i in range(len(self.RPD.DISCIPLINE.STUDY_HOURS)):
+			ps += self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['pract']
+
+		self.ui.practTotalLabel.setText(str(ps))
+		if ps != 0:
+			self.ui.practSaveButton.clicked.connect(self.handlePractSaveButtonClicked)
+		else:
+			self.ui.practCreateButton.setDisabled(True)
+			self.ui.practDeleteButton.setDisabled(True)
+			self.ui.practSaveButton.setDisabled(True)
+			self.BOXES[4][3] = False
+		
 		for i in range(len(self.RPD.DISCIPLINE.STUDY_HOURS)):  # добавление вкладок с описанием семестров дисциплины
 			e = semesterBox(self.ui.centralwidget)  # создаем объект класса с родителем - главным виджетом окна
 			e.setGeometry(QtCore.QRect(250, 0, 551, 601))
 			e.setVisible(False)
-			self.BOXES.insert(3 + i, [e, self.ui.label_4, False])  # добавляем новый объект в список вкладок после конкретной позиции
+			self.BOXES.insert(3 + i, [e, self.ui.label_4, False, True])  # добавляем новый объект в список вкладок после конкретной позиции
 			e.dicpNameLabel.setText(self.RPD.DISCIPLINE.NAME)  # заполнение информации об учебных часах в семестре
 			e.semNoLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][0]))
 			e.lectLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['lect']))
@@ -338,33 +376,8 @@ class RPD_Window(QMainWindow):
 				e.moduleScrollAreaWidgetContents,
 				int(e.semNoLabel.text())))
 
-		self.ui.labCreateButton.clicked.connect(partial(self.addBox_lab,
-			self.ui.labScrollAreaWidgetContents, taskBox, 1))
-		self.ui.labDeleteButton.clicked.connect(partial(self.deleteBox,
-			self.ui.labScrollAreaWidgetContents))
-
-		ls = 0
-		for i in range(len(self.RPD.DISCIPLINE.STUDY_HOURS)):
-			ls += self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['lab']
-
-		self.ui.labTotalLabel.setText(str(ls))
-		if ls != 0:
-			self.ui.labSaveButton.clicked.connect(self.handleLabSaveButtonClicked)
-
-		self.ui.practCreateButton.clicked.connect(partial(self.addBox_pract,
-			self.ui.practScrollAreaWidgetContents, taskBox, 1))
-		self.ui.practDeleteButton.clicked.connect(partial(self.deleteBox,
-			self.ui.practScrollAreaWidgetContents))
-
-		ps = 0
-		for i in range(len(self.RPD.DISCIPLINE.STUDY_HOURS)):
-			ps += self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['pract']
-
-		self.ui.practTotalLabel.setText(str(ps))
-		if ps != 0:
-			self.ui.practSaveButton.clicked.connect(self.handlePractSaveButtonClicked)
-
 		self.sender().setDisabled(True)
+		self.ui.forwButton.setEnabled(True)
 
 	def handleCompSaveButtonClicked(self, parent):
 		
@@ -377,6 +390,7 @@ class RPD_Window(QMainWindow):
 			self.RPD.DISCIPLINE.COMPETENCIES[i//5]['to_be_able'] = textEdits[i + 4].toPlainText()
 
 		self.sender().setDisabled(True)
+		self.ui.forwButton.setEnabled(True)
 
 	def handleSpinBoxValueChanged(self, parent):
 		"""Display current hours' quantity as value of QSpinBox changes"""
@@ -420,6 +434,7 @@ class RPD_Window(QMainWindow):
 			self.RPD.DISCIPLINE.LABS.append(q)
 
 		self.sender().setDisabled(True)
+		self.ui.forwButton.setEnabled(True)
 
 	def handlePractSpinBoxValueChanged(self, parent):
 
@@ -445,6 +460,7 @@ class RPD_Window(QMainWindow):
 			self.RPD.DISCIPLINE.PRACT.append(q)
 
 		self.sender().setDisabled(True)
+		self.ui.forwButton.setEnabled(True)
 
 	def handleSaveModuleButtonClicked(self, parent, semester):  # почему я не реализовал это как метод класса moduleBox?
 		"""Overwrites discipline.SEMESTER field with values set in the interface"""
@@ -476,6 +492,7 @@ class RPD_Window(QMainWindow):
 						int(lineEdits[k*5 + 4].text()))
 
 		self.sender().setDisabled(True)  # деактивировать кнопку сохранения
+		self.ui.forwButton.setEnabled(True)
 
 	def handleDownloadPathButtonClicked(self):
 		"""Init QFileDialog to set RPD saving path"""
