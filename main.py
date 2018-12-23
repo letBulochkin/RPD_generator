@@ -2,8 +2,8 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import (QWidget, QApplication, QMainWindow, 
 	QFileDialog, QLabel, QLineEdit, QTextEdit, QGroupBox, 
 	QFormLayout, QGridLayout, QVBoxLayout, QPushButton, QScrollArea,
-	QSpinBox)
-from pycore import commutator
+	QSpinBox, QMessageBox)
+from pycore import commutator, struct
 from functools import partial
 from inspect import isclass
 from openpyxl.utils.exceptions import InvalidFileException
@@ -267,7 +267,18 @@ class RPD_Window(QMainWindow):
 			except AssertionError as err:
 				self.ui.uploadStatusLabel.setText(err.args[0])
 			except InvalidFileException:
-				self.ui.uploadStatusLabel.setText('Формат файла .xls. Сохраните файл в формате .xlsx')
+				self.ui.uploadStatusLabel.setText('Неверный формат файла учебного плана. Сохраните файл в формате .xlsx')
+			except ValueError:
+				self.ui.uploadStatusLabel.setText('Неверный формат файла шаблона. Загрузите файл в формате .docx')
+			except Exception as err:
+				warn = QMessageBox()
+				warn.setIcon(QMessageBox.Critical)
+				warn.setWindowTitle("Критическая ошибка")
+				warn.setText("В ходе открытия файлов произошла ошибка.")
+				warn.setInformativeText("Тип ошибки представлен внизу. Сообщите его системному администратору.")
+				warn.setDetailedText(str(err))
+				warn.setStandardButtons(QMessageBox.Ok)
+				warn.exec_()
 			else:
 				self.ui.uploadStatusLabel.setText('Успешно!')
 				self.ui.dispComboBox.addItems(  # добавляем в ComboBox доступные дисциплины, объединяя их в строку
@@ -352,7 +363,7 @@ class RPD_Window(QMainWindow):
 			self.ui.practDeleteButton.setDisabled(True)
 			self.ui.practSaveButton.setDisabled(True)
 			self.BOXES[4][3] = False
-		
+
 		for i in range(len(self.RPD.DISCIPLINE.STUDY_HOURS)):  # добавление вкладок с описанием семестров дисциплины
 			e = semesterBox(self.ui.centralwidget)  # создаем объект класса с родителем - главным виджетом окна
 			e.setGeometry(QtCore.QRect(250, 0, 551, 601))
@@ -423,8 +434,19 @@ class RPD_Window(QMainWindow):
 
 	def handleLabSaveButtonClicked(self):
 
+		self.RPD.DISCIPLINE.LABS = []
+
 		lineEdits = self.ui.labScrollArea.findChildren(QLineEdit)
 		textEdits = self.ui.labScrollArea.findChildren(QTextEdit)
+
+		if len(lineEdits) == 0:
+			warn = QMessageBox()
+			warn.setIcon(QMessageBox.Warning)
+			warn.setWindowTitle("Отмена действия")
+			warn.setText("Не добавлено ни одной лабораторной работы!")
+			warn.setStandardButtons(QMessageBox.Ok)
+			warn.exec_()
+			return
 
 		for i in range(0, len(lineEdits), 2):
 			q = []
@@ -449,12 +471,23 @@ class RPD_Window(QMainWindow):
 
 	def handlePractSaveButtonClicked(self):
 
+		self.RPD.DISCIPLINE.PRACT = []
+
 		lineEdits = self.ui.practScrollArea.findChildren(QLineEdit)
 		textEdits = self.ui.practScrollArea.findChildren(QTextEdit)
 
+		if len(lineEdits) == 0:
+			warn = QMessageBox()
+			warn.setIcon(QMessageBox.Warning)
+			warn.setWindowTitle("Отмена действия")
+			warn.setText("Не добавлено ни одной практики!")
+			warn.setStandardButtons(QMessageBox.Ok)
+			warn.exec_()
+			return
+
 		for i in range(0, len(lineEdits), 2):
 			q = []
-			q.append(lineEdits[i].text())
+			q.append(lineEdits[i].text())  # ОПАСНО: нет конвертации в int
 			q.append(textEdits[i//2].toPlainText())
 			q.append(lineEdits[i+1].text())
 			self.RPD.DISCIPLINE.PRACT.append(q)
@@ -467,29 +500,48 @@ class RPD_Window(QMainWindow):
 
 		lineEdits = parent.findChildren(QLineEdit)  # QSpinBox представляется как QLineEdit тоже
 		textEdits = parent.findChildren(QTextEdit)
-				
+		
+		if len(textEdits) == 0:
+			warn = QMessageBox()
+			warn.setIcon(QMessageBox.Warning)
+			warn.setWindowTitle("Отмена действия")
+			warn.setText("Не добавлено ни одного раздела!")
+			warn.setStandardButtons(QMessageBox.Ok)
+			warn.exec_()
+			return
+
 		for i in self.RPD.DISCIPLINE.SEMESTERS:
 			if i[0] == semester:
-				for k in range(len(textEdits)):
-					i[1].add_module(
-						int(lineEdits[k*5].text()),
-						textEdits[k].toPlainText())
-					i[1].add_study(
-						int(lineEdits[k*5].text()),
-						1,
-						int(lineEdits[k*5 + 1].text()))
-					i[1].add_study(
-						int(lineEdits[k*5].text()),
-						2,
-						int(lineEdits[k*5 + 2].text()))
-					i[1].add_study(
-						int(lineEdits[k*5].text()),
-						3,
-						int(lineEdits[k*5 + 3].text()))
-					i[1].add_study(
-						int(lineEdits[k*5].text()),
-						4,
-						int(lineEdits[k*5 + 4].text()))
+				i[1] = struct.semester()
+				try:
+					for k in range(len(textEdits)):
+						i[1].add_module(
+							int(lineEdits[k*5].text()),
+							textEdits[k].toPlainText())
+						i[1].add_study(
+							int(lineEdits[k*5].text()),
+							1,
+							int(lineEdits[k*5 + 1].text()))
+						i[1].add_study(
+							int(lineEdits[k*5].text()),
+							2,
+							int(lineEdits[k*5 + 2].text()))
+						i[1].add_study(
+							int(lineEdits[k*5].text()),
+							3,
+							int(lineEdits[k*5 + 3].text()))
+						i[1].add_study(
+							int(lineEdits[k*5].text()),
+							4,
+							int(lineEdits[k*5 + 4].text()))
+				except ValueError as err:
+					warn = QMessageBox()
+					warn.setIcon(QMessageBox.Warning)
+					warn.setWindowTitle("Отмена действия")
+					warn.setText("Не заполнен номер раздела!")
+					warn.setStandardButtons(QMessageBox.Ok)
+					warn.exec_()
+					return
 
 		self.sender().setDisabled(True)  # деактивировать кнопку сохранения
 		self.ui.forwButton.setEnabled(True)
@@ -507,9 +559,29 @@ class RPD_Window(QMainWindow):
 
 	def handleDownloadButtonClicked(self):
 		
-		self.RPD.produce(self.RPD_PATH)
-		os.system('explorer "{}"'.format(self.RPD_PATH))
-		sys.exit()
+		try:
+			self.RPD.produce(self.RPD_PATH)
+		except Exception as err:
+			warn = QMessageBox()
+			warn.setIcon(QMessageBox.Critical)
+			warn.setWindowTitle("Критическая ошибка")
+			warn.setText("В ходе формирования Рабочей программы произошла ошибка.")
+			warn.setInformativeText("Тип ошибки представлен внизу. Сообщите его системному администратору.")
+			warn.setDetailedText(str(err))
+			warn.setStandardButtons(QMessageBox.Ok)
+			warn.exec_()
+		else:
+			warn = QMessageBox()
+			warn.setIcon(QMessageBox.Information)
+			warn.setWindowTitle("Завершение работы")
+			warn.setText("Рабочая программа успешно сформирована.")
+			warn.setInformativeText(
+				"Сейчас откроется папка с Рабочей программой. Внимательно проверьте ее текст, дополните необходимой информацией.")
+			warn.setStandardButtons(QMessageBox.Ok)
+			warn.exec_()
+			os.system('explorer "{}"'.format(self.RPD_PATH))
+		finally:
+			sys.exit()
 
 	def connectModuleBox(addfunc):
 		"""Decorator for addBox method. Connects added QSpinBoxes to local method"""

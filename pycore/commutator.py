@@ -304,7 +304,8 @@ class rpd(object):
 				s += 'Владеть ' + i['to_be_able'].strip()
 			q.append(s)
 			queue_list.append(q)
-		generator.seq_write_to_table(self.DOC.tables[17 + self.ADDED_TABLES], queue_list)
+		if queue_list != []:
+			generator.seq_write_to_table(self.DOC.tables[17 + self.ADDED_TABLES], queue_list)
 
 		queue_list = []
 		for i in self.DISCIPLINE.COMPETENCIES:
@@ -326,7 +327,8 @@ class rpd(object):
 				q.append('Владеть ' + i['to_be_able'])
 				q.append('Выполнение устных/письменных заданий')
 				queue_list.append(q)
-		generator.seq_write_to_table(self.DOC.tables[18 + self.ADDED_TABLES], queue_list)
+		if queue_list != []:
+			generator.seq_write_to_table(self.DOC.tables[18 + self.ADDED_TABLES], queue_list)
 
 		reserve_t = self.DOC.tables[19 + self.ADDED_TABLES]
 		base_par = [i for i in self.DOC.paragraphs if 'Шкала оценивания:' in i.text]
