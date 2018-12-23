@@ -1,5 +1,6 @@
 import openpyxl
 from enum import Enum
+import xml.etree.ElementTree as etree
 from . import crawler
 
 class study_plan(object):
@@ -7,9 +8,14 @@ class study_plan(object):
     Study plan class.
 
     TODO: реализовать все алгоритмы поиска отдельно.
+
+    Errors:
+    xml.etree.ElementTree.ParseError: mismatched tag:
+    Ненайденный элемент
+
     """
 
-    def __init__(self, file):
+    def __init__(self, book, rules):
         '''
         Инициализация полей класса
         Class attributes initialization
@@ -17,23 +23,33 @@ class study_plan(object):
         TODO: oh we need mapper
         '''
 
-        self.BOOK = openpyxl.load_workbook(file)
-        sheet = self.BOOK['Титул']
-        
-        self.MINISTRY = sheet['B1'].value
-        self.UNIVERCITY = sheet['B10'].value.rsplit('\n', 1)[0]
-        self.INSTITUTE = sheet['B10'].value.rsplit('\n', 1)[1]
-        self.RECTOR = sheet['X12'].value
-        self.FIELD_OF_KNOW = sheet['B18'].value.rsplit('Направление ', 1)[1]
-        self.PROFILE = sheet['B19'].value
-        self.CATHEDRA = sheet['B26'].value
-        self.QUALI_LEVEL = sheet['A29'].value.rsplit('Квалификация: ', 1)[1]
-        self.EDU_PROG = sheet['A30'].value.rsplit('Программа подготовки: ', 1)[1]
-        self.EDU_FORMAT = sheet['A31'].value.rsplit('Форма обучения: ', 1)[1]
-        self.EDU_TIME = sheet['A32'].value.rsplit('Срок обучения: ', 1)[1]  # поправить, убрать приписку г
-        self.START_YEAR = sheet['T29'].value
+        self.BOOK = openpyxl.load_workbook(book)
+        self.DATA = etree.parse(rules).getroot()
 
-        self.PRACTICE_TYPES = [[i[2]] for i in crawler.range_search(sheet, 'C38', 'C39', '', mode = "notmatch")]
+        sp = self.DATA.find('studyplan')
+        if sp is None:
+            raise ValueError("Necessary tag not found: ", 'studyplan')
+
+        sheet = self.BOOK[sp.find('sheet').text]
+        
+        self.MINISTRY = sheet[sp.find('ministry').text].value
+        self.UNIVERCITY = sheet[sp.find('univercity').text].value.rsplit('\n', 1)[0]
+        self.INSTITUTE = sheet[sp.find('institute').text].value.rsplit('\n', 1)[1]
+        self.RECTOR = sheet[sp.find('rector').text].value
+        self.FIELD_OF_KNOW = sheet[sp.find('field').text].value.rsplit('Направление ', 1)[1]
+        self.PROFILE = sheet[sp.find('profile').text].value
+        self.CATHEDRA = sheet[sp.find('cath').text].value
+        self.QUALI_LEVEL = sheet[sp.find('quali_level').text].value.rsplit('Квалификация: ', 1)[1]
+        self.EDU_PROG = sheet[sp.find('edu_prog').text].value.rsplit('Программа подготовки: ', 1)[1]
+        self.EDU_FORMAT = sheet[sp.find('edu_format').text].value.rsplit('Форма обучения: ', 1)[1]
+        self.EDU_TIME = sheet[sp.find('edu_time').text].value.rsplit('Срок обучения: ', 1)[1]  # поправить, убрать приписку г
+        self.START_YEAR = sheet[sp.find('start_year').text].value
+
+        start = sp.find('practice_types').find('start').text
+        stop = sp.find('practice_types').find('stop').text
+
+        self.PRACTICE_TYPES = [[i[2]] for i in crawler.range_search(
+            sheet, start, stop, '', mode = "notmatch")]
 
     def data_parse(self):
         pass
@@ -45,14 +61,22 @@ class study_plan(object):
         '''
 
         disciplines = []
-        sheet = self.BOOK['ПланСвод']
 
-        for i in crawler.range_search(sheet, 'Y6', 'Y104', self.CATHEDRA):
-            disciplines.append([sheet.cell(row = i[0], column = 2).value, 
-                sheet.cell(row = i[0], column = 3).value]) 
+        ad = self.DATA.find('studyplan').find('avail_disciplines')
+        if ad is None:
+            raise ValueError("Necessary tag not found: ", 'avail_disciplines')
+        
+        sheet = self.BOOK[ad.find('sheet').text]
+
+        start = ad.find('start').text
+        stop = ad.find('stop').text
+        code_col = int(ad.find('code_col').text)
+        descrp_col = int(ad.find('descrp_col').text)
+        for i in crawler.range_search(sheet, start, stop, self.CATHEDRA):
+            disciplines.append([sheet.cell(row = i[0], column = code_col).value, 
+                sheet.cell(row = i[0], column = descrp_col).value]) 
         
         return disciplines
-
 
 class discipline(object):
 
@@ -62,6 +86,10 @@ class discipline(object):
         self.INDEX = index
         self.NAME = ''.join(i[1] for i in self.STUDY_PLAN.list_avail_disciplines() if i[0] == index)
         
+        self.TAG = self.STUDY_PLAN.DATA.find('discipline')
+        if self.TAG is None:
+            raise ValueError("Necessary tag not found: ", 'discipline')
+
         if index.rsplit('.')[1] == 'Б': 
             self.PART = True  # базовая
         elif index.rsplit('.')[1] == 'В':
@@ -85,16 +113,28 @@ class discipline(object):
         '''
         
         competencies = []
-        sheet = self.STUDY_PLAN.BOOK['Компетенции(2)']
         
-        r = crawler.range_search(sheet, 'A2', 'C85', self.INDEX)[0][0]
+        com = self.TAG.find('competencies')
+
+        sheet = self.STUDY_PLAN.BOOK[com.find('indexes').find('sheet').text]
+        
+        r = crawler.range_search(
+            sheet, 
+            com.find('indexes').find('start').text, 
+            com.find('indexes').find('stop').text, 
+            self.INDEX)[0][0]
 
         for i in sheet.cell(row = r, column = 6).value.rsplit('; '):
             q = {}
             q['code'] = i
-            sheet = self.STUDY_PLAN.BOOK['Компетенции']
-            cont = sheet.cell(row = crawler.range_search(sheet, 'B3', 'B177', i)[0][0],
-                column = 4).value
+            sheet = self.STUDY_PLAN.BOOK[com.find('descriptions').find('sheet').text]
+            cont = sheet.cell(
+                row = crawler.range_search(
+                    sheet, 
+                    com.find('descriptions').find('start').text, 
+                    com.find('descriptions').find('stop').text, 
+                    i)[0][0], 
+                column = int(com.find('descriptions').find('descrp_col').text)).value
             q['descrp'] = cont
             q['part'] = None
             q['to_know'] = None
@@ -112,25 +152,42 @@ class discipline(object):
 
         semesters = []  # список семестров, в которые читается дисциплина
 
-        sheet = self.STUDY_PLAN.BOOK['ПланСвод']
+        sems = self.TAG.find('semesters')
 
-        dicp_cell = crawler.range_search(sheet, 'B6', 'B104', self.INDEX)  # поиск ячейки с дисциплиной 
+        sheet = self.STUDY_PLAN.BOOK[sems.find('sheet').text]
+
+        dicp_cell = crawler.range_search(
+            sheet, 
+            sems.find('start').text, 
+            sems.find('stop').text, 
+            self.INDEX)  # поиск ячейки с дисциплиной 
 
         # задаем диапазон для поиска значений по найденной ячейке
-        search_cell_start = crawler.coord_to_letter(dicp_cell[0][0], dicp_cell[0][1] + 14)
-        search_cell_stop = crawler.coord_to_letter(dicp_cell[0][0], dicp_cell[0][1] + 21)
+        search_cell_start = crawler.coord_to_letter(
+            dicp_cell[0][0], 
+            dicp_cell[0][1] + int(sems.find('sem_search').find('start_sdv').text))
+        search_cell_stop = crawler.coord_to_letter(
+            dicp_cell[0][0], 
+            dicp_cell[0][1] + int(sems.find('sem_search').find('stop_sdv').text))
 
         # по тем ячейкам, где было найдено значение, поднимаемся наверх и смотрим номер семестра
         for i in crawler.range_search(sheet, search_cell_start, search_cell_stop, None, "notmatch"):
             q = []
-            sem_no = int(sheet.cell(row = 2, column = i[1]).value.rsplit('. ', 1)[1])  # получаем номер семестра
+            sem_no = int(sheet.cell(
+                row = int(sems.find('sem_search').find('sem_no_row').text), 
+                column = i[1]
+            ).value.rsplit('. ', 1)[1])  # получаем номер семестра
             q.extend([sem_no, semester(), False, False])
-            search_st = crawler.coord_to_letter(dicp_cell[0][0], dicp_cell[0][1] + 2)
-            search_fin = crawler.coord_to_letter(dicp_cell[0][0], dicp_cell[0][1] + 3)
+            search_st = crawler.coord_to_letter(
+                dicp_cell[0][0], 
+                dicp_cell[0][1] + int(sems.find('control_search').find('start_sdv').text))
+            search_fin = crawler.coord_to_letter(
+                dicp_cell[0][0], 
+                dicp_cell[0][1] + int(sems.find('control_search').find('stop_sdv').text))
             for k in crawler.range_search(sheet, search_st, search_fin, str(sem_no), "in"):
-                if sheet.cell(row = 3, column = k[1]).value == 'Экза мен':
+                if sheet.cell(row = int(sems.find('control_search').find('control_row').text), column = k[1]).value == 'Экза мен':
                     q[2] = True
-                elif sheet.cell(row = 3, column = k[1]).value == 'Зачет':
+                elif sheet.cell(row = int(sems.find('control_search').find('control_row').text), column = k[1]).value == 'Зачет':
                     q[3] = True
             semesters.append(q)
 
@@ -139,13 +196,24 @@ class discipline(object):
     def __get_hours__(self):
 
         sem = self.__get_semesters__()
-        sheet = self.STUDY_PLAN.BOOK['План']
+
+        hrs = self.TAG.find('hours')
+
+        sheet = self.STUDY_PLAN.BOOK[hrs.find('sheet').text]
         res = []
 
         for i in range(len(sem)):
             h = {}
-            dicp_cell = crawler.range_search(sheet, 'B6', 'B104', self.INDEX)
-            sem_cell = crawler.range_search(sheet, 'P2', 'BT2', 'Сем. ' + str(sem[i][0]))
+            dicp_cell = crawler.range_search(
+                sheet, 
+                hrs.find('dicp_cell').find('start').text, 
+                hrs.find('dicp_cell').find('stop').text, 
+                self.INDEX)
+            sem_cell = crawler.range_search(
+                sheet, 
+                hrs.find('sem_cell').find('start').text, 
+                hrs.find('sem_cell').find('stop').text, 
+                'Сем. ' + str(sem[i][0]))
             h['zach_ed'] = crawler.int_eater(sheet.cell(row = dicp_cell[0][0], column = sem_cell[0][1]).value)
             h['total'] = crawler.int_eater(sheet.cell(row = dicp_cell[0][0], column = sem_cell[0][1] + 1).value)
             h['lect'] = crawler.int_eater(sheet.cell(row = dicp_cell[0][0], column = sem_cell[0][1] + 2).value)
