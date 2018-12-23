@@ -199,6 +199,7 @@ class RPD_Window(QMainWindow):
 
 		self.PLAN_FNAME = None
 		self.SAMPLE_FNAME = None
+		self.RULE_FNAME = None
 		self.RPD = None  # может не надо?
 		self.RPD_PATH = None
 
@@ -215,6 +216,7 @@ class RPD_Window(QMainWindow):
 		self.ui.forwButton.clicked.connect(self.browseBox)
 		self.ui.study_planUploadButton.clicked.connect(self.handlePlanButtonClicked)
 		self.ui.rpdUploadButton.clicked.connect(self.handleRpdButtonClicked)
+		self.ui.ruleUploadButton.clicked.connect(self.handleRuleButtonClicked)
 		self.ui.createButton.clicked.connect(self.handleCreateButtonClicked)
 		self.ui.dispShowButton.clicked.connect(self.handleDispShowButtonClicked)
 		self.ui.downloadPathButton.clicked.connect(self.handleDownloadPathButtonClicked)
@@ -255,6 +257,11 @@ class RPD_Window(QMainWindow):
 		self.SAMPLE_FNAME = QFileDialog.getOpenFileName(self, 'Открыть шаблон', 'C:\\')[0]
 		self.ui.rpdPathLabel.setText(self.SAMPLE_FNAME)
 
+	def handleRuleButtonClicked(self):
+
+		self.RULE_FNAME = QFileDialog.getOpenFileName(self, 'Открыть файл конфигурации', 'C:\\')[0]
+		self.ui.rulePathLabel.setText(self.RULE_FNAME)
+
 	def handleCreateButtonClicked(self):
 		"""Create RPD instance with parameters set in the interface. 
 
@@ -263,7 +270,7 @@ class RPD_Window(QMainWindow):
 		
 		if self.PLAN_FNAME != None and self.SAMPLE_FNAME != None:  # если оба файла заданы
 			try:
-				self.RPD = commutator.rpd(self.PLAN_FNAME, self.SAMPLE_FNAME)  # создаем экземпляр
+				self.RPD = commutator.rpd(self.PLAN_FNAME, self.RULE_FNAME, self.SAMPLE_FNAME)  # создаем экземпляр
 			except AssertionError as err:
 				self.ui.uploadStatusLabel.setText(err.args[0])
 			except InvalidFileException:

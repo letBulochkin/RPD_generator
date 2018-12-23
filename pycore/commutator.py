@@ -3,9 +3,9 @@ from . import struct, generator
 
 class rpd(object):
 
-	def __init__(self, source, sample):
+	def __init__(self, source, rule, sample):
 
-		self.STUDY_PLAN = struct.study_plan(source)
+		self.STUDY_PLAN = struct.study_plan(source, rule)
 		self.DOC = Document(sample)
 		self.PREFIX = 'РАБОЧАЯ_ПРОГРАММА_'
 		self.ADDED_TABLES = 0
