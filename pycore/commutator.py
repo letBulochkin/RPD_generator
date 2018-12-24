@@ -33,7 +33,7 @@ class rpd(object):
 
 		#[4, 1, 1]
 		table_check_list = [
-			[2, 0, 0], [2, 2, 6], [2, 4, 2], [2, 6, 3], [2, 8, 4], [2, 10, 5], [2, 12, 1], [6, 1, 0],
+			[2, 0, 0], [2, 2, 6], [2, 4, 2], [2, 6, 3], [2, 8, 4], [2, 10, 5], [2, 12, 1], [4, 1, 1], [6, 1, 0],
 			[6, 1, 1], [6, 1, 2], [7, 3, 0], [7, 3, 1], [7, 3, 2], [7, 3, 3], [7, 3, 4], [7, 3, 5], [7, 3, 6],
 			[7, 3, 7], [8, 1, 0], [8, 1, 1], [8, 1, 2], [9, 1, 0], [9, 1, 1], [9, 1, 2], [10, 1, 0], [10, 1, 1],
 			[10, 1, 2], [12, 2, 4], [13, 1, 0], [14, 1, 0], [15, 1, 0], [16, 1, 0], [16, 1, 1], [17, 1, 0],
@@ -146,6 +146,8 @@ class rpd(object):
 		generator.write_to_cell(self.DOC.tables[2], 10, 5, self.DISCIPLINE.STUDY_PLAN.EDU_PROG)
 		generator.write_to_cell(self.DOC.tables[2], 12, 1, self.DISCIPLINE.STUDY_PLAN.CATHEDRA)
 
+		generator.write_to_cell(self.DOC.tables[4], 1, 1, self.DISCIPLINE.STUDY_PLAN.CATHEDRA)
+
 		queue_list = []
 		for i in self.DISCIPLINE.COMPETENCIES:
 			q = []
@@ -180,19 +182,33 @@ class rpd(object):
 			for k in self.DISCIPLINE.SEMESTERS:
 				if k[0] == self.DISCIPLINE.STUDY_HOURS[i][0]:
 					for l in k[1].MODULES:
-						queue_list.append([str(l['num']),
+						queue_list.append([
+							str(l['num']),
 							str(l['lect'] + l['lab'] + l['pract'] + l['sam']),
 							str(l['lect']),
 							str(l['lab']),
 							str(l['pract']),
-							str(l['sam'])
+							str(l['sam']),
+							'',
+							''
 						])
-			queue_list.append(['Всего: ', 
+			
+			if self.DISCIPLINE.SEMESTERS[i][1].EXAM:
+				control_str = 'Экзамен'
+			elif self.DISCIPLINE.SEMESTERS[i][1].ZACHET:
+				control_str = 'Зачет'
+			else:
+				control_str = ''
+			
+			queue_list.append([
+				'Всего: ', 
 				str(self.DISCIPLINE.STUDY_HOURS[i][1]['total']), 
 				str(self.DISCIPLINE.STUDY_HOURS[i][1]['lect']),
 				str(self.DISCIPLINE.STUDY_HOURS[i][1]['lab']),
 				str(self.DISCIPLINE.STUDY_HOURS[i][1]['pract']),
-				str(self.DISCIPLINE.STUDY_HOURS[i][1]['sam'])
+				str(self.DISCIPLINE.STUDY_HOURS[i][1]['sam']),
+				str(self.DISCIPLINE.STUDY_HOURS[i][1]['krpa'] + self.DISCIPLINE.STUDY_HOURS[i][1]['control']),
+				control_str
 			])
 			generator.seq_write_to_table(t, queue_list)
 		generator.remove_table(self.DOC.tables[7])
