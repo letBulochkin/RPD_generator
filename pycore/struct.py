@@ -177,7 +177,7 @@ class discipline(object):
                 row = int(sems.find('sem_search').find('sem_no_row').text), 
                 column = i[1]
             ).value.rsplit('. ', 1)[1])  # получаем номер семестра
-            q.extend([sem_no, semester(), False, False])
+            q.extend([sem_no, semester(), False, False, False, False])  # абсолютно отвратительно
             search_st = crawler.coord_to_letter(
                 dicp_cell[0][0], 
                 dicp_cell[0][1] + int(sems.find('control_search').find('start_sdv').text))
@@ -189,6 +189,10 @@ class discipline(object):
                     q[2] = True
                 elif sheet.cell(row = int(sems.find('control_search').find('control_row').text), column = k[1]).value == 'Зачет':
                     q[3] = True
+                elif sheet.cell(row = int(sems.find('control_search').find('control_row').text), column = k[1]).value == 'Зачет c оц.':
+                    q[4] = True
+                elif sheet.cell(row = int(sems.find('control_search').find('control_row').text), column = k[1]).value == 'КР':
+                    q[5] = True
             semesters.append(q)
 
         return semesters
@@ -232,8 +236,10 @@ class semester(object):
 
         self.STUDY_TYPES = Enum('Study_Types', 'lect lab pract sam')
 
-        self.EXAM = None
-        self.ZACHET = None
+        # self.EXAM = None
+        # self.ZACHET = None
+        # self.CONTROL_FORMS = []
+        
         self.MODULES = []
         
     def add_module(self, num, description):

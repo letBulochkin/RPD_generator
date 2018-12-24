@@ -123,14 +123,24 @@ class rpd(object):
 		generator.write_to_par(self.TEXT[49], 1, str(sum_total))
 
 		queue_string = ''
-		for i in self.DISCIPLINE.SEMESTERS:
-			if i[3] == True:
-				queue_string += "зачет"
-				break
+		queue_list = []
 		for i in self.DISCIPLINE.SEMESTERS:
 			if i[2] == True:
-				queue_string += ", экзамен"
+				queue_list.append("экзамен")
 				break
+		for i in self.DISCIPLINE.SEMESTERS:
+			if i[3] == True:
+				queue_list.append("зачет")
+				break
+		for i in self.DISCIPLINE.SEMESTERS:
+			if i[4] == True:
+				queue_list.append("зачет с оценкой")
+				break
+		for i in self.DISCIPLINE.SEMESTERS:
+			if i[5] == True:
+				queue_list.append("курсовая работа")
+				break
+		queue_string = ", ".join(queue_list)
 		generator.write_to_par(self.TEXT[50], 0, queue_string)
 
 		generator.write_to_par(self.TEXT[53], 0, self.DISCIPLINE.NAME)
@@ -192,14 +202,17 @@ class rpd(object):
 							'',
 							''
 						])
-			
-			if self.DISCIPLINE.SEMESTERS[i][1].EXAM:
-				control_str = 'Экзамен'
-			elif self.DISCIPLINE.SEMESTERS[i][1].ZACHET:
-				control_str = 'Зачет'
-			else:
-				control_str = ''
-			
+			ctrl_list = []
+			control_str = ''
+			if self.DISCIPLINE.SEMESTERS[i][2] == True:
+				ctrl_list.append("экзамен")
+			if self.DISCIPLINE.SEMESTERS[i][3] == True:
+				ctrl_list.append("зачет")
+			if self.DISCIPLINE.SEMESTERS[i][4] == True:
+				ctrl_list.append("зачет с оценкой")
+			if self.DISCIPLINE.SEMESTERS[i][5] == True:
+				ctrl_list.append("курсовая работа")
+			control_str = ", ".join(ctrl_list)
 			queue_list.append([
 				'Всего: ', 
 				str(self.DISCIPLINE.STUDY_HOURS[i][1]['total']), 
@@ -273,14 +286,24 @@ class rpd(object):
 		self.ADDED_TABLES -= 1
 
 		queue_string = ''
-		for i in self.DISCIPLINE.SEMESTERS:
-			if i[3] == True:
-				queue_string += "зачет"
-				break
+		queue_list = []
 		for i in self.DISCIPLINE.SEMESTERS:
 			if i[2] == True:
-				queue_string += ", экзамен"
+				queue_list.append("экзамен")
 				break
+		for i in self.DISCIPLINE.SEMESTERS:
+			if i[3] == True:
+				queue_list.append("зачет")
+				break
+		for i in self.DISCIPLINE.SEMESTERS:
+			if i[4] == True:
+				queue_list.append("зачет с оценкой")
+				break
+		for i in self.DISCIPLINE.SEMESTERS:
+			if i[5] == True:
+				queue_list.append("курсовая работа")
+				break
+		queue_string = ", ".join(queue_list)
 		generator.write_to_cell(self.DOC.tables[12 + self.ADDED_TABLES], 2, 4, queue_string)
 
 		queue_string = ''
