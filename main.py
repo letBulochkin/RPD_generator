@@ -404,6 +404,12 @@ class RPD_Window(QMainWindow):
 
 	def handleCompSaveButtonClicked(self, parent):
 		
+		for i in self.RPD.DISCIPLINE.COMPETENCIES:
+			i['part'] = None
+			i['to_know'] = None
+			i['to_can'] = None
+			i['to_be_able'] = None
+
 		textEdits = parent.findChildren(QTextEdit)
 		
 		for i in range(0, len(textEdits), 5):
@@ -412,7 +418,13 @@ class RPD_Window(QMainWindow):
 			self.RPD.DISCIPLINE.COMPETENCIES[i//5]['to_can'] = textEdits[i + 3].toPlainText()
 			self.RPD.DISCIPLINE.COMPETENCIES[i//5]['to_be_able'] = textEdits[i + 4].toPlainText()
 
-		self.sender().setDisabled(True)
+		warn = QMessageBox()
+		warn.setIcon(QMessageBox.Information)
+		warn.setWindowTitle("Сохранение")
+		warn.setText("Компетенции сохранены.")
+		warn.setStandardButtons(QMessageBox.Ok)
+		warn.exec_()
+
 		self.ui.forwButton.setEnabled(True)
 		self.BOXES[2][3] = False
 
@@ -468,7 +480,13 @@ class RPD_Window(QMainWindow):
 			q.append(lineEdits[i+1].text())
 			self.RPD.DISCIPLINE.LABS.append(q)
 
-		self.sender().setDisabled(True)
+		warn = QMessageBox()
+		warn.setIcon(QMessageBox.Information)
+		warn.setWindowTitle("Сохранение")
+		warn.setText("Лабораторные работы сохранены.")
+		warn.setStandardButtons(QMessageBox.Ok)
+		warn.exec_()
+
 		self.ui.forwButton.setEnabled(True)
 		self.BOXES[3 + len(self.RPD.DISCIPLINE.STUDY_HOURS)][3] = False
 
@@ -494,7 +512,7 @@ class RPD_Window(QMainWindow):
 			warn = QMessageBox()
 			warn.setIcon(QMessageBox.Warning)
 			warn.setWindowTitle("Отмена действия")
-			warn.setText("Не добавлено ни одной практики!")
+			warn.setText("Не добавлено ни одной практической работы!")
 			warn.setStandardButtons(QMessageBox.Ok)
 			warn.exec_()
 			return
@@ -506,7 +524,13 @@ class RPD_Window(QMainWindow):
 			q.append(lineEdits[i+1].text())
 			self.RPD.DISCIPLINE.PRACT.append(q)
 
-		self.sender().setDisabled(True)
+		warn = QMessageBox()
+		warn.setIcon(QMessageBox.Information)
+		warn.setWindowTitle("Сохранение")
+		warn.setText("Практические работы сохранены.")
+		warn.setStandardButtons(QMessageBox.Ok)
+		warn.exec_()
+		
 		self.ui.forwButton.setEnabled(True)
 		self.BOXES[4 + len(self.RPD.DISCIPLINE.STUDY_HOURS)][3] = False
 
@@ -561,7 +585,13 @@ class RPD_Window(QMainWindow):
 					warn.exec_()
 					return
 
-		self.sender().setDisabled(True)  # деактивировать кнопку сохранения
+		warn = QMessageBox()
+		warn.setIcon(QMessageBox.Information)
+		warn.setWindowTitle("Сохранение")
+		warn.setText("Разделы семестра сохранены.")
+		warn.setStandardButtons(QMessageBox.Ok)
+		warn.exec_()
+
 		self.ui.forwButton.setEnabled(True)
 		self.BOXES[2 + curr_box][3] = False
 
