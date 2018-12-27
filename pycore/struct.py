@@ -201,6 +201,16 @@ class discipline(object):
 
         sem = self.__get_semesters__()
 
+        mp = [
+        ['з.е.', 'zach_ed'],
+        ['Лек', 'lect'],
+        ['Лаб', 'lab'],
+        ['Пр', 'pract'],
+        ['СР', 'sam'],
+        ['КрПА', 'krpa'],
+        ['Конт роль', 'control']
+        ]
+
         hrs = self.TAG.find('hours')
 
         sheet = self.STUDY_PLAN.BOOK[hrs.find('sheet').text]
@@ -218,14 +228,14 @@ class discipline(object):
                 hrs.find('sem_cell').find('start').text, 
                 hrs.find('sem_cell').find('stop').text, 
                 'Сем. ' + str(sem[i][0]))
-            h['zach_ed'] = crawler.int_eater(sheet.cell(row = dicp_cell[0][0], column = sem_cell[0][1]).value)
-            h['total'] = crawler.int_eater(sheet.cell(row = dicp_cell[0][0], column = sem_cell[0][1] + 1).value)
-            h['lect'] = crawler.int_eater(sheet.cell(row = dicp_cell[0][0], column = sem_cell[0][1] + 2).value)
-            h['lab'] = crawler.int_eater(sheet.cell(row = dicp_cell[0][0], column = sem_cell[0][1] + 3).value)
-            h['pract'] = crawler.int_eater(sheet.cell(row = dicp_cell[0][0], column = sem_cell[0][1] + 4).value)
-            h['sam'] = crawler.int_eater(sheet.cell(row = dicp_cell[0][0], column = sem_cell[0][1] + 5).value)
-            h['krpa'] = crawler.int_eater(sheet.cell(row = dicp_cell[0][0], column = sem_cell[0][1] + 6).value)
-            h['control'] = crawler.int_eater(sheet.cell(row = dicp_cell[0][0], column = sem_cell[0][1] + 7).value)
+            itercol = 0
+            while True:
+                key = ''.join([x[1] for x in mp if x[0] == sheet.cell(row = sem_cell[0][0] + 1, column = sem_cell[0][1] + itercol).value])
+                h[key] = crawler.int_eater(sheet.cell(row = dicp_cell[0][0], column = sem_cell[0][1] + itercol).value)
+                itercol += 1
+                if sheet.cell(row = sem_cell[0][0] + 1, column = sem_cell[0][1] + itercol).value == 'з.е.':
+                    break
+            h['total'] = h['lect'] + h['lab'] + h['pract'] + h['sam'] + h['krpa'] + h['control']
             res.append([sem[i][0], h])
 
         return res

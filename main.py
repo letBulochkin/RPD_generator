@@ -608,6 +608,15 @@ class RPD_Window(QMainWindow):
 
 	def handleDownloadButtonClicked(self):
 		
+		if self.RPD_PATH is None:
+			warn = QMessageBox()
+			warn.setIcon(QMessageBox.Warning)
+			warn.setWindowTitle("Неверное действие")
+			warn.setText("Укажите папку для сохранения Рабочей программы!")
+			warn.setStandardButtons(QMessageBox.Ok)
+			warn.exec_()
+			return
+
 		try:
 			self.RPD.produce(self.RPD_PATH)
 		except Exception as err:
