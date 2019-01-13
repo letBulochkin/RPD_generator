@@ -201,14 +201,14 @@ class discipline(object):
 
         sem = self.__get_semesters__()
 
-        mp = [
-        ['з.е.', 'zach_ed'],
-        ['Лек', 'lect'],
-        ['Лаб', 'lab'],
-        ['Пр', 'pract'],
-        ['СР', 'sam'],
-        ['КрПА', 'krpa'],
-        ['Конт роль', 'control']
+        mp = [  # почему бы не сделать словарем?
+            ['з.е.', 'zach_ed'],  # TODO: определять поля из таблицы в xml
+            ['Лек', 'lect'],
+            ['Лаб', 'lab'],
+            ['Пр', 'pract'],
+            ['СР', 'sam'],
+            ['КрПА', 'krpa'],
+            ['Конт роль', 'control']
         ]
 
         hrs = self.TAG.find('hours')
@@ -216,24 +216,27 @@ class discipline(object):
         sheet = self.STUDY_PLAN.BOOK[hrs.find('sheet').text]
         res = []
 
-        for i in range(len(sem)):
+        for i in range(len(sem)):  # этот участок кода надо будет переписать в дальнейшем
             h = {}
+            for key in mp: 
+                h[key[1]] = 0  # инициализируем и обнуляем все элементы словаря
             dicp_cell = crawler.range_search(
                 sheet, 
                 hrs.find('dicp_cell').find('start').text, 
                 hrs.find('dicp_cell').find('stop').text, 
-                self.INDEX)
+                self.INDEX)  # находим ячейку с кодом дисциплины
             sem_cell = crawler.range_search(
                 sheet, 
                 hrs.find('sem_cell').find('start').text, 
                 hrs.find('sem_cell').find('stop').text, 
-                'Сем. ' + str(sem[i][0]))
+                'Сем. ' + str(sem[i][0]))  # находим ячейку с номером семестра
             itercol = 0
-            while True:
+            while True:  # строкой ниже находим в шапке таблицы ячейку с текстом из словаря и получаем соответствующий ей ключ
                 key = ''.join([x[1] for x in mp if x[0] == sheet.cell(row = sem_cell[0][0] + 1, column = sem_cell[0][1] + itercol).value])
                 h[key] = crawler.int_eater(sheet.cell(row = dicp_cell[0][0], column = sem_cell[0][1] + itercol).value)
-                itercol += 1
-                if sheet.cell(row = sem_cell[0][0] + 1, column = sem_cell[0][1] + itercol).value == 'з.е.':
+                itercol += 1  # строкой выше записываем в словарь по ключу значение из ячейки с часами
+                cval = sheet.cell(row = sem_cell[0][0] + 1, column = sem_cell[0][1] + itercol).value  # значение следующей ячейки шапки таблицы
+                if cval == 'з.е.' or cval == 'Код':
                     break
             h['total'] = h['lect'] + h['lab'] + h['pract'] + h['sam'] + h['krpa'] + h['control']
             res.append([sem[i][0], h])

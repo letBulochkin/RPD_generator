@@ -8,7 +8,10 @@ def int_eater(val):
 		try:
 			return int(val)  # oh God why
 		except ValueError:
-			return float(val)
+			try:
+				return float(val)
+			except:
+				return 0
 
 def coord_to_letter(row, col):
 	"""Transforms Excel cell coordinate to letter-coordinate (e.g. 15,1 -> A15)
