@@ -222,6 +222,8 @@ class RPD_Window(QMainWindow):
 		self.ui.downloadPathButton.clicked.connect(self.handleDownloadPathButtonClicked)
 		self.ui.downloadButton.clicked.connect(self.handleDownloadButtonClicked)
 
+	"""== Navigation sidebar =="""
+
 	def browseBox(self):
 		"""Browses QGroupBox'es in response to button click."""
 
@@ -246,10 +248,12 @@ class RPD_Window(QMainWindow):
 					self.ui.forwButton.setDisabled(self.BOXES[i-1][3])
 					break
 	
+	"""== Upload screen =="""
+
 	def handlePlanButtonClicked(self):
 		"""Initialize QFileDialog in response to button click. Show chosen path via label."""
 		
-		self.PLAN_FNAME = QFileDialog.getOpenFileName(self, 'Открыть учебный план', 'C:\\')[0]
+		self.PLAN_FNAME = QFileDialog.getOpenFileName(self, 'Открыть учебный план')[0]
 		self.ui.study_planPathLabel.setText(self.PLAN_FNAME)
 
 	def handleRpdButtonClicked(self):
@@ -264,12 +268,9 @@ class RPD_Window(QMainWindow):
 		self.ui.rulePathLabel.setText(self.RULE_FNAME)
 
 	def handleCreateButtonClicked(self):
-		"""Create RPD instance with parameters set in the interface. 
-
-		TODO: Exceptions
-		"""
+		"""Create RPD instance with parameters set in the interface."""
 		
-		if self.PLAN_FNAME != None and self.SAMPLE_FNAME != None:  # если оба файла заданы
+		if self.PLAN_FNAME != None and self.SAMPLE_FNAME != None and self.RULE_FNAME != None:  # если оба файла заданы
 			try:
 				self.RPD = commutator.rpd(self.PLAN_FNAME, self.RULE_FNAME, self.SAMPLE_FNAME)  # создаем экземпляр
 			except AssertionError as err:
@@ -299,6 +300,8 @@ class RPD_Window(QMainWindow):
 			# self.ui.dispShowButton.clicked.connect(self.handleDispShowButtonClicked)
 		else:
 			self.ui.uploadStatusLabel.setText('Не выбраны файлы!')
+
+	"""== Discipline info screen =="""
 
 	def handleDispShowButtonClicked(self):
 		"""Create discipline instance, fill the QLineEdits with information and add competency descriptions to the next box
@@ -402,6 +405,8 @@ class RPD_Window(QMainWindow):
 		self.ui.forwButton.setEnabled(True)
 		self.BOXES[1][3] = False
 
+	"""== Competencies screen =="""
+
 	def handleCompSaveButtonClicked(self, parent):
 		
 		for i in self.RPD.DISCIPLINE.COMPETENCIES:
@@ -418,17 +423,14 @@ class RPD_Window(QMainWindow):
 			self.RPD.DISCIPLINE.COMPETENCIES[i//5]['to_can'] = textEdits[i + 3].toPlainText()
 			self.RPD.DISCIPLINE.COMPETENCIES[i//5]['to_be_able'] = textEdits[i + 4].toPlainText()
 
-		warn = QMessageBox()
-		warn.setIcon(QMessageBox.Information)
-		warn.setWindowTitle("Сохранение")
-		warn.setText("Компетенции сохранены.")
-		warn.setStandardButtons(QMessageBox.Ok)
-		warn.exec_()
+		self.infoMessagePopUp("Сохранение", "Компетенции сохранены.")
 
 		self.ui.forwButton.setEnabled(True)
 		self.BOXES[2][3] = False
 
-	def handleSpinBoxValueChanged(self, parent):
+	"""== Modules screen =="""
+
+	def handleModuleSpinBoxValueChanged(self, parent):
 		"""Display current hours' quantity as value of QSpinBox changes"""
 
 		lineEdits = parent.moduleScrollArea.findChildren(QLineEdit)
@@ -446,94 +448,6 @@ class RPD_Window(QMainWindow):
 		parent.practRelLabel.setText(str(pract))
 		parent.samRelLabel.setText(str(sam))
 
-	def handleLabSpinBoxValueChanged(self, parent):
-
-		lineEdits = self.ui.labScrollArea.findChildren(QLineEdit)
-
-		h = 0
-
-		for i in range(0, len(lineEdits), 2):
-			h += int(lineEdits[i+1].text())
-
-		self.ui.labRelLabel.setText(str(h))
-
-	def handleLabSaveButtonClicked(self):
-
-		self.RPD.DISCIPLINE.LABS = []
-
-		lineEdits = self.ui.labScrollArea.findChildren(QLineEdit)
-		textEdits = self.ui.labScrollArea.findChildren(QTextEdit)
-
-		if len(lineEdits) == 0:
-			warn = QMessageBox()
-			warn.setIcon(QMessageBox.Warning)
-			warn.setWindowTitle("Отмена действия")
-			warn.setText("Не добавлено ни одной лабораторной работы!")
-			warn.setStandardButtons(QMessageBox.Ok)
-			warn.exec_()
-			return
-
-		for i in range(0, len(lineEdits), 2):
-			q = []
-			q.append(lineEdits[i].text())
-			q.append(textEdits[i//2].toPlainText())
-			q.append(lineEdits[i+1].text())
-			self.RPD.DISCIPLINE.LABS.append(q)
-
-		warn = QMessageBox()
-		warn.setIcon(QMessageBox.Information)
-		warn.setWindowTitle("Сохранение")
-		warn.setText("Лабораторные работы сохранены.")
-		warn.setStandardButtons(QMessageBox.Ok)
-		warn.exec_()
-
-		self.ui.forwButton.setEnabled(True)
-		self.BOXES[3 + len(self.RPD.DISCIPLINE.STUDY_HOURS)][3] = False
-
-	def handlePractSpinBoxValueChanged(self, parent):
-
-		lineEdits = self.ui.practScrollArea.findChildren(QLineEdit)
-
-		h = 0
-
-		for i in range(0, len(lineEdits), 2):
-			h += int(lineEdits[i+1].text())
-
-		self.ui.practRelLabel.setText(str(h))
-
-	def handlePractSaveButtonClicked(self):
-
-		self.RPD.DISCIPLINE.PRACT = []
-
-		lineEdits = self.ui.practScrollArea.findChildren(QLineEdit)
-		textEdits = self.ui.practScrollArea.findChildren(QTextEdit)
-
-		if len(lineEdits) == 0:
-			warn = QMessageBox()
-			warn.setIcon(QMessageBox.Warning)
-			warn.setWindowTitle("Отмена действия")
-			warn.setText("Не добавлено ни одной практической работы!")
-			warn.setStandardButtons(QMessageBox.Ok)
-			warn.exec_()
-			return
-
-		for i in range(0, len(lineEdits), 2):
-			q = []
-			q.append(lineEdits[i].text())  # ОПАСНО: нет конвертации в int
-			q.append(textEdits[i//2].toPlainText())
-			q.append(lineEdits[i+1].text())
-			self.RPD.DISCIPLINE.PRACT.append(q)
-
-		warn = QMessageBox()
-		warn.setIcon(QMessageBox.Information)
-		warn.setWindowTitle("Сохранение")
-		warn.setText("Практические работы сохранены.")
-		warn.setStandardButtons(QMessageBox.Ok)
-		warn.exec_()
-		
-		self.ui.forwButton.setEnabled(True)
-		self.BOXES[4 + len(self.RPD.DISCIPLINE.STUDY_HOURS)][3] = False
-
 	def handleSaveModuleButtonClicked(self, parent, semester):  # почему я не реализовал это как метод класса moduleBox?
 		"""Overwrites discipline.SEMESTER field with values set in the interface"""
 
@@ -542,12 +456,7 @@ class RPD_Window(QMainWindow):
 		curr_box = 0
 		
 		if len(textEdits) == 0:
-			warn = QMessageBox()
-			warn.setIcon(QMessageBox.Warning)
-			warn.setWindowTitle("Отмена действия")
-			warn.setText("Не добавлено ни одного раздела!")
-			warn.setStandardButtons(QMessageBox.Ok)
-			warn.exec_()
+			self.infoMessagePopUp("Отмена действия", "Не добавлено ни одного раздела!", True)
 			return
 
 		for i in self.RPD.DISCIPLINE.SEMESTERS:
@@ -577,23 +486,87 @@ class RPD_Window(QMainWindow):
 							int(lineEdits[k*5 + 4].text()))
 					break
 				except ValueError as err:
-					warn = QMessageBox()
-					warn.setIcon(QMessageBox.Warning)
-					warn.setWindowTitle("Отмена действия")
-					warn.setText("Не заполнен номер раздела!")
-					warn.setStandardButtons(QMessageBox.Ok)
-					warn.exec_()
+					self.infoMessagePopUp("Отмена действия", "Не заполнен номер раздела!", True)
 					return
 
-		warn = QMessageBox()
-		warn.setIcon(QMessageBox.Information)
-		warn.setWindowTitle("Сохранение")
-		warn.setText("Разделы семестра сохранены.")
-		warn.setStandardButtons(QMessageBox.Ok)
-		warn.exec_()
+		self.infoMessagePopUp("Сохранение", "Разделы семестра сохранены.")
 
 		self.ui.forwButton.setEnabled(True)
 		self.BOXES[2 + curr_box][3] = False
+
+	"""== Labs screen =="""
+
+	def handleLabSpinBoxValueChanged(self, parent):
+
+		lineEdits = self.ui.labScrollArea.findChildren(QLineEdit)
+
+		h = 0
+
+		for i in range(0, len(lineEdits), 2):
+			h += int(lineEdits[i+1].text())
+
+		self.ui.labRelLabel.setText(str(h))
+
+	def handleLabSaveButtonClicked(self):
+
+		self.RPD.DISCIPLINE.LABS = []
+
+		lineEdits = self.ui.labScrollArea.findChildren(QLineEdit)
+		textEdits = self.ui.labScrollArea.findChildren(QTextEdit)
+
+		if len(lineEdits) == 0:
+			self.infoMessagePopUp("Отмена действия", "Не добавлено ни одной лабораторной работы!", True)
+			return
+
+		for i in range(0, len(lineEdits), 2):
+			q = []
+			q.append(lineEdits[i].text())
+			q.append(textEdits[i//2].toPlainText())
+			q.append(lineEdits[i+1].text())
+			self.RPD.DISCIPLINE.LABS.append(q)
+
+		self.infoMessagePopUp("Сохранение", "Лабораторные работы сохранены.")
+
+		self.ui.forwButton.setEnabled(True)
+		self.BOXES[3 + len(self.RPD.DISCIPLINE.STUDY_HOURS)][3] = False
+
+	"""== Practs screen =="""
+
+	def handlePractSpinBoxValueChanged(self, parent):
+
+		lineEdits = self.ui.practScrollArea.findChildren(QLineEdit)
+
+		h = 0
+
+		for i in range(0, len(lineEdits), 2):
+			h += int(lineEdits[i+1].text())
+
+		self.ui.practRelLabel.setText(str(h))
+
+	def handlePractSaveButtonClicked(self):
+
+		self.RPD.DISCIPLINE.PRACT = []
+
+		lineEdits = self.ui.practScrollArea.findChildren(QLineEdit)
+		textEdits = self.ui.practScrollArea.findChildren(QTextEdit)
+
+		if len(lineEdits) == 0:
+			self.infoMessagePopUp("Отмена действия", "Не добавлено ни одной практической работы!", True)
+			return
+
+		for i in range(0, len(lineEdits), 2):
+			q = []
+			q.append(lineEdits[i].text())  # ОПАСНО: нет конвертации в int
+			q.append(textEdits[i//2].toPlainText())
+			q.append(lineEdits[i+1].text())
+			self.RPD.DISCIPLINE.PRACT.append(q)
+
+		self.infoMessagePopUp("Сохранение", "Практические работы сохранены.")
+		
+		self.ui.forwButton.setEnabled(True)
+		self.BOXES[4 + len(self.RPD.DISCIPLINE.STUDY_HOURS)][3] = False
+
+	"""== Download screen =="""
 
 	def handleDownloadPathButtonClicked(self):
 		"""Init QFileDialog to set RPD saving path"""
@@ -609,12 +582,11 @@ class RPD_Window(QMainWindow):
 	def handleDownloadButtonClicked(self):
 		
 		if self.RPD_PATH is None:
-			warn = QMessageBox()
-			warn.setIcon(QMessageBox.Warning)
-			warn.setWindowTitle("Неверное действие")
-			warn.setText("Укажите папку для сохранения Рабочей программы!")
-			warn.setStandardButtons(QMessageBox.Ok)
-			warn.exec_()
+			self.infoMessagePopUp(
+				"Неверное действие", 
+				"Укажите папку для сохранения рабочей программы!", 
+				True
+			)
 			return
 
 		try:
@@ -629,17 +601,15 @@ class RPD_Window(QMainWindow):
 			warn.setStandardButtons(QMessageBox.Ok)
 			warn.exec_()
 		else:
-			warn = QMessageBox()
-			warn.setIcon(QMessageBox.Information)
-			warn.setWindowTitle("Завершение работы")
-			warn.setText("Рабочая программа успешно сформирована.")
-			warn.setInformativeText(
-				"Сейчас откроется папка с Рабочей программой. Внимательно проверьте ее текст, дополните необходимой информацией.")
-			warn.setStandardButtons(QMessageBox.Ok)
-			warn.exec_()
+			self.infoMessagePopUp(
+				"Завершение работы", 
+				"Рабочая программа успешно сформирована.\nСейчас откроется папка с Рабочей программой.\nВнимательно проверьте ее текст, дополните необходимой информацией."
+			)
 			os.system('explorer "{}"'.format(self.RPD_PATH))
 		finally:
 			sys.exit()
+
+	"""== QModuleBox addition and deletion methods =="""
 
 	def connectModuleBox(addfunc):
 		"""Decorator for addBox method. Connects added QSpinBoxes to local method"""
@@ -650,7 +620,7 @@ class RPD_Window(QMainWindow):
 			while not isinstance(e, semesterBox):  # найти тот элемент родитель, в котором есть нужные QLabel
 				e = e.parent()
 			for i in parent.findChildren(QSpinBox):
-				i.valueChanged.connect(partial(self.handleSpinBoxValueChanged, e))
+				i.valueChanged.connect(partial(self.handleModuleSpinBoxValueChanged, e))
 		
 		return wrapper
 
@@ -731,6 +701,22 @@ class RPD_Window(QMainWindow):
 				box = None
 			else:
 				pass
+
+	"""== Error handling and dialog windows =="""
+
+	def errorMessagePopUp(self, text):
+		pass
+
+	def infoMessagePopUp(self, title, text, warn = False):
+		wind = QMessageBox()
+		if warn == False:
+			wind.setIcon(QMessageBox.Information)
+		elif warn == True:
+			wind.setIcon(QMessageBox.Warning)
+		wind.setWindowTitle(title)
+		wind.setText(text)
+		wind.setStandardButtons(QMessageBox.Ok)
+		wind.exec_()
 
 if __name__ == "__main__":
 	app = QApplication(sys.argv)
