@@ -358,7 +358,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "RPD_generator_v0.2.4"))
         self.sideBox.setTitle(_translate("MainWindow", "Этапы создания"))
         self.uploadBoxLabel.setText(_translate("MainWindow", "1. Загрузка файлов"))
         self.disciplineBoxLabel.setText(_translate("MainWindow", "2. Информация о дисциплине"))
