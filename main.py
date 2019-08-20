@@ -9,183 +9,6 @@ from inspect import isclass
 from openpyxl.utils.exceptions import InvalidFileException
 import os, sys, sip, ui_RPD
 
-class competencyBox(QWidget):
-	"""QT Interface class: QGroupBox containing competencies info"""
-
-	def __init__(self, parent):
-
-		super(competencyBox, self).__init__(parent)
-
-		self.compCodeLineEdit = QLineEdit()
-		self.compCodeLineEdit.setDisabled(True)
-		self.compDescrpTextEdit = QTextEdit()
-		self.compDescrpTextEdit.setDisabled(True)
-		self.compPartTextEdit = QTextEdit()
-		self.compKnowTextEdit = QTextEdit()
-		self.compCanTextEdit = QTextEdit()
-		self.compAbilTextEdit = QTextEdit()
-
-		self.lay = QVBoxLayout(self)
-		self.box = QGroupBox(self)
-		self.lay.addWidget(self.box)
-		self.form_lay = QFormLayout(self)
-		self.form_lay.addRow(QLabel("Код: "), self.compCodeLineEdit)
-		self.form_lay.addRow(QLabel("Описание: "), self.compDescrpTextEdit)
-		self.form_lay.addRow(QLabel("в части... "), self.compPartTextEdit)
-		self.form_lay.addRow(QLabel("Знать: "), self.compKnowTextEdit)
-		self.form_lay.addRow(QLabel("Уметь: "), self.compCanTextEdit)
-		self.form_lay.addRow(QLabel("Владеть: "), self.compAbilTextEdit)
-
-		self.box.setLayout(self.form_lay)
-		# self.box.setFixedSize(460, 240)
-
-class moduleBox(QWidget):
-	"""QT Interface class: QGroupBox containing semester's module info"""
-
-	def __init__(self, parent):
-
-		super(moduleBox, self).__init__(parent)
-
-		self.moduleNoLineEdit = QLineEdit()
-		self.moduleDescrpTextEdit = QTextEdit()
-		self.moduleLectSpinBox = QSpinBox()
-		self.moduleLabSpinBox = QSpinBox()
-		self.modulePractSpinBox = QSpinBox()
-		self.moduleSamSpinBox = QSpinBox()
-
-		self.lay = QVBoxLayout(self)
-		self.box = QGroupBox(self)
-		self.lay.addWidget(self.box)
-		self.form_lay = QFormLayout(self)
-		self.form_lay.addRow(QLabel("Номер раздела: "), self.moduleNoLineEdit)
-		self.form_lay.addRow(QLabel("Название раздела: "), self.moduleDescrpTextEdit)
-		self.form_lay.addRow(QLabel("Лекций (часов): "), self.moduleLectSpinBox)
-		self.form_lay.addRow(QLabel("Лабораторных (часов): "), self.moduleLabSpinBox)
-		self.form_lay.addRow(QLabel("Практик (часов): "), self.modulePractSpinBox)
-		self.form_lay.addRow(QLabel("Самост. работ (часов): "), self.moduleSamSpinBox)
-
-		self.box.setLayout(self.form_lay)
-
-class taskBox(QWidget):
-
-	def __init__(self, parent):
-
-		super(taskBox, self).__init__(parent)
-
-		self.taskNoLineEdit = QLineEdit()
-		self.taskThemeTextEdit = QTextEdit()
-		self.taskHoursSpinBox = QSpinBox()
-
-		self.lay = QVBoxLayout(self)
-		self.box = QGroupBox(self)
-		self.lay.addWidget(self.box)
-		self.form_lay = QFormLayout(self)
-		self.form_lay.addRow(QLabel("Номер: "), self.taskNoLineEdit)
-		self.form_lay.addRow(QLabel("Тема: "), self.taskThemeTextEdit)
-		self.form_lay.addRow(QLabel("Часов: "), self.taskHoursSpinBox)
-
-		self.box.setLayout(self.form_lay)
-
-class semesterBox(QWidget):
-	"""QT Interface class: QGroupBox containing semester info"""
-
-	def __init__(self, parent):
-
-		super(semesterBox, self).__init__(parent)
-
-		font = QtGui.QFont()
-		font.setPointSize(11)
-		
-		self.box = QGroupBox(self)
-		self.box.setTitle("Разделы дисциплины")
-		self.box.setFont(font)
-
-		self.dicpInfoLabel = QLabel(self.box)
-		self.dicpInfoLabel.setText("Дисциплина: ")
-		self.dicpInfoLabel.setGeometry(QtCore.QRect(10, 30, 91, 16))
-		self.dicpNameLabel = QLabel(self.box)
-		self.dicpNameLabel.setGeometry(QtCore.QRect(100, 30, 431, 16))
-		
-		self.semNoInfoLabel = QLabel(self.box)
-		self.semNoInfoLabel.setText("Семестр №")
-		self.semNoInfoLabel.setGeometry(QtCore.QRect(10, 50, 81, 16))
-		self.semNoLabel = QLabel(self.box)
-		self.semNoLabel.setGeometry(QtCore.QRect(100, 50, 21, 16))
-		self.lectInfoLabel = QLabel(self.box)
-		self.lectInfoLabel.setText("Лк:")
-		self.lectInfoLabel.setGeometry(QtCore.QRect(130, 50, 31, 16))
-		self.lectLabel = QLabel(self.box)
-		self.lectLabel.setGeometry(QtCore.QRect(160, 50, 21, 16))
-		self.labInfoLabel = QLabel(self.box)
-		self.labInfoLabel.setText("Лаб:")
-		self.labInfoLabel.setGeometry(QtCore.QRect(190, 50, 31, 16))
-		self.labLabel = QLabel(self.box)
-		self.labLabel.setGeometry(QtCore.QRect(230, 50, 21, 16))
-		self.practInfoLabel = QLabel(self.box)
-		self.practInfoLabel.setText("Пр:")
-		self.practInfoLabel.setGeometry(QtCore.QRect(260, 50, 31, 16))
-		self.practLabel = QLabel(self.box)
-		self.practLabel.setGeometry(QtCore.QRect(290, 50, 21, 16))
-		self.samInfoLabel = QLabel(self.box)
-		self.samInfoLabel.setText("Ср:")
-		self.samInfoLabel.setGeometry(QtCore.QRect(320, 50, 31, 16))
-		self.samLabel = QLabel(self.box)
-		self.samLabel.setGeometry(QtCore.QRect(350, 50, 21, 16))
-		self.controlInfoLabel = QLabel(self.box)
-		self.controlInfoLabel.setText("Контроль:")
-		self.controlInfoLabel.setGeometry(QtCore.QRect(380, 50, 71, 16))
-		self.controlLabel = QLabel(self.box)
-		self.controlLabel.setGeometry(QtCore.QRect(460, 50, 41, 16))
-		
-		self.totalInfoLabel = QLabel(self.box)
-		self.totalInfoLabel.setText("Всего часов:")
-		self.totalInfoLabel.setGeometry(QtCore.QRect(10, 70, 91, 16))
-		self.totalLabel = QLabel(self.box)
-		self.totalLabel.setGeometry(QtCore.QRect(110, 70, 51, 16))
-		
-		self.relevantInfoLabel = QLabel(self.box)
-		self.relevantInfoLabel.setText("Часов введено:")
-		self.relevantInfoLabel.setGeometry(QtCore.QRect(10, 90, 111, 16))
-		self.lectRelInfoLabel = QLabel(self.box)
-		self.lectRelInfoLabel.setText("Лк:")
-		self.lectRelInfoLabel.setGeometry(QtCore.QRect(130, 90, 31, 16))
-		self.lectRelLabel = QLabel(self.box)
-		self.lectRelLabel.setGeometry(QtCore.QRect(160, 90, 21, 16))
-		self.labRelInfoLabel = QLabel(self.box)
-		self.labRelInfoLabel.setText("Лаб:")
-		self.labRelInfoLabel.setGeometry(QtCore.QRect(190, 90, 31, 16))
-		self.labRelLabel = QLabel(self.box)
-		self.labRelLabel.setGeometry(QtCore.QRect(230, 90, 21, 16))
-		self.practRelInfoLabel = QLabel(self.box)
-		self.practRelInfoLabel.setText("Пр:")
-		self.practRelInfoLabel.setGeometry(QtCore.QRect(260, 90, 31, 16))
-		self.practRelLabel = QLabel(self.box)
-		self.practRelLabel.setGeometry(QtCore.QRect(290, 90, 21, 16))
-		self.samRelInfoLabel = QLabel(self.box)
-		self.samRelInfoLabel.setText("Ср:")
-		self.samRelInfoLabel.setGeometry(QtCore.QRect(320, 90, 31, 16))
-		self.samRelLabel = QLabel(self.box)
-		self.samRelLabel.setGeometry(QtCore.QRect(350, 90, 21, 16))
-
-		self.createModuleButton = QPushButton(self.box)
-		self.createModuleButton.setText("+")
-		self.createModuleButton.setGeometry(QtCore.QRect(10, 120, 31, 31))
-		self.delModuleButton = QPushButton(self.box)
-		self.delModuleButton.setText("-")
-		self.delModuleButton.setGeometry(QtCore.QRect(43, 120, 31, 31))
-		self.saveModuleButton = QPushButton(self.box)
-		self.saveModuleButton.setText("Сохранить")
-		self.saveModuleButton.setGeometry(QtCore.QRect(76, 120, 101, 31))
-		
-		self.moduleScrollArea = QScrollArea(self.box)
-		self.moduleScrollArea.move(10, 160)
-		self.moduleScrollArea.setFixedWidth(531)
-		self.moduleScrollArea.setMinimumHeight(450)
-		self.moduleScrollArea.setWidgetResizable(True)
-		self.moduleScrollAreaWidgetContents = QWidget()
-		self.moduleScrollAreaWidgetContents.setObjectName("moduleScrollAreaWidgetContents")
-		self.moduleScrollArea.setWidget(self.moduleScrollAreaWidgetContents)
-
 class RPD_Window(QMainWindow):
 	"""Main Window class"""
 
@@ -207,7 +30,7 @@ class RPD_Window(QMainWindow):
 		# [QGroupBox, QLabel - associated label from side panel, Bool - flag to make QGroupBox visible, Bool - flag to make forwButton disabled]
 		self.BOXES = [[self.ui.uploadBox, self.ui.uploadBoxLabel, True, True],
 			[self.ui.disciplineBox, self.ui.disciplineBoxLabel, False, True],
-			[self.ui.competencyBox, self.ui.competencyBoxLabel, False, True],
+			[self.ui.competenciesBox, self.ui.competenciesBoxLabel, False, True],
 			[self.ui.labBox, self.ui.labBoxLabel, False, True],
 			[self.ui.practBox, self.ui.practBoxLabel, False, True],
 			[self.ui.downloadBox, self.ui.label_15, False, True]]
@@ -328,7 +151,7 @@ class RPD_Window(QMainWindow):
 		else:
 			self.ui.dispObligFalseButton.setChecked(True)
 
-		self.addBox(self.ui.compScrollAreaWidgetContents, competencyBox, 
+		self.addBox(self.ui.compScrollAreaWidgetContents, ui_RPD.Ui_competencyBox, 
 			len(self.RPD.DISCIPLINE.COMPETENCIES))  # добавление competencyBox в соотв с количеством компетенций дисциплины
 		lineEdits = self.ui.compScrollAreaWidgetContents.findChildren(QLineEdit)  # получаем дочерние элементы типа
 		textEdits = self.ui.compScrollAreaWidgetContents.findChildren(QTextEdit)
@@ -341,7 +164,7 @@ class RPD_Window(QMainWindow):
 			self.ui.compScrollAreaWidgetContents))
 
 		for i in range(len(self.RPD.DISCIPLINE.STUDY_HOURS)):  # добавление вкладок с описанием семестров дисциплины
-			e = semesterBox(self.ui.centralwidget)  # создаем объект класса с родителем - главным виджетом окна
+			e = ui_RPD.Ui_semesterBox(self.ui.centralwidget)  # создаем объект класса с родителем - главным виджетом окна
 			e.setGeometry(QtCore.QRect(250, 0, 551, 601))
 			e.setVisible(False)
 			self.BOXES.insert(3 + i, [e, self.ui.label_4, False, True])  # добавляем новый объект в список вкладок после конкретной позиции
@@ -355,7 +178,7 @@ class RPD_Window(QMainWindow):
 				+ self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['control']))  # Контроль и КрПа складываем
 			e.totalLabel.setText(str(self.RPD.DISCIPLINE.STUDY_HOURS[i][1]['total']))
 			e.createModuleButton.clicked.connect(partial(self.addBox_module,  
-				e.moduleScrollAreaWidgetContents, moduleBox, 1))  # partial для вызова метода-приемника сигнала с параметрами
+				e.moduleScrollAreaWidgetContents, ui_RPD.Ui_moduleBox, 1))  # partial для вызова метода-приемника сигнала с параметрами
 			e.delModuleButton.clicked.connect(partial(self.deleteBox,
 				e.moduleScrollAreaWidgetContents))
 			e.saveModuleButton.clicked.connect(partial(
@@ -364,7 +187,7 @@ class RPD_Window(QMainWindow):
 				int(e.semNoLabel.text())))
 
 		self.ui.labCreateButton.clicked.connect(partial(self.addBox_lab,
-			self.ui.labScrollAreaWidgetContents, taskBox, 1))
+			self.ui.labScrollAreaWidgetContents, ui_RPD.Ui_taskBox, 1))
 		self.ui.labDeleteButton.clicked.connect(partial(self.deleteBox,
 			self.ui.labScrollAreaWidgetContents))
 
@@ -383,7 +206,7 @@ class RPD_Window(QMainWindow):
 			#self.BOXES[3][3] = False
 
 		self.ui.practCreateButton.clicked.connect(partial(self.addBox_pract,
-			self.ui.practScrollAreaWidgetContents, taskBox, 1))
+			self.ui.practScrollAreaWidgetContents, ui_RPD.Ui_taskBox, 1))
 		self.ui.practDeleteButton.clicked.connect(partial(self.deleteBox,
 			self.ui.practScrollAreaWidgetContents))
 
@@ -617,7 +440,7 @@ class RPD_Window(QMainWindow):
 		def wrapper(self, parent, element, number):
 			addfunc(self, parent, element, number)
 			e = parent
-			while not isinstance(e, semesterBox):  # найти тот элемент родитель, в котором есть нужные QLabel
+			while not isinstance(e, ui_RPD.Ui_semesterBox):  # найти тот элемент родитель, в котором есть нужные QLabel
 				e = e.parent()
 			for i in parent.findChildren(QSpinBox):
 				i.valueChanged.connect(partial(self.handleModuleSpinBoxValueChanged, e))
